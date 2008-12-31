@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<!-- build file for dependency-manager part of TermWare project -->
+<project name="TermWare-ivy" default="retrieve-for-jar" basedir="."
+        xmlns:ivy='antlib:fr.jayasoft.ivy.ant'
+>
+
+<!-- proeprties -->
+
+<property file="build.properties" />
+
+<property name="ivy.install.version" value="2.0.0-beta2" />
+
+<condition property="ivy.int.home" value="${ivy.home}" else="${user.home}/.ivy">
+  <isset property="ivy.home" />
+</condition>
+
+<property name="ivy.jar.dir" value="${ivy.int.home}/jars" />
+<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+<property name="maven.repo" value="http://repo1.maven.org/maven2" />
+<property name="ivy.groupId" value="org/apache/ivy" />
+
+
+  
+<!-- targets -->
+
+ <target name="download-ivy" unless="offline">
+    <!-- download Ivy from web site so that it can be used even without any special installation -->
+   <mkdir dir="${ivy.jar.dir}"/>
+   <get src="${maven.repo}/${ivy.groupId}/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+        dest="${ivy.jar.file}" usetimestamp="true" verbose="true" />
+   <get src="http://ovh.dl.sourceforge.net/sourceforge/jsch/jsch-0.1.36.jar"
+        dest="${ivy.jar.dir}/jsch.jar" usetimestamp="true" verbose="true" />
+ </target>
+
+ <target name="declare-ivy" depends="download-ivy">
+   <path id="ivy.lib.path">
+      <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+   </path>
+   <taskdef resource="fr/jayasoft/ivy/ant/antlib.xml"
+            uri="antlib:fr.jayasoft.ivy.ant" 
+            classpathref="ivy.lib.path"/>
+ </target>
+
+ <target name="resolve-ivy" depends="declare-ivy">
+   <!--<ivy:configure file="ivysettings.xml" />-->
+   <ivy:resolve />
+ </target>
+
+
+ <target name="retrieve-for-jar" depends="resolve-ivy" >
+   <ivy:retrieve conf="jar" 
+                 pattern="lib/[artifact]-[revision].[ext]" />
+ </target>
+
+ <target name="retrieve-for-build" depends="declare-ivy" >
+   <ivy:retrieve conf="build" 
+                 pattern="lib/build/[artifact].[ext]" />
+ </target>
+ 
+ <target name="retrieve-for-test" depends="declare-ivy" >
+   <ivy:retrieve conf="test" 
+                 pattern="lib/[artifact]-[revision].[ext]" />
+ </target>
+
+ <target name="retrieve-for-src" depends="declare-ivy" >
+   <ivy:retrieve conf="src" 
+                 pattern="lib/[artifact]-[revision].[ext]" />
+ </target>
+
+ <target name="publish.only" depends="resolve-ivy" >
+   <copy file="lib/TermWare-${termware.version}.jar" todir="installer" />
+   <copy file="lib/TermWare2jsr94-${termware.version}.jar" todir="installer" />
+   <ivy:publish resolver="publish.gradsoft.ua" 
+                pubrevision="${termware.version}"
+                overwrite="true"
+                artifactspattern="installer/[artifact]-[revision].[ext]" />
+ </target>
+
+
+</project>

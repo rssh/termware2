@@ -1,0 +1,22 @@
+
+#
+# Rewriting System for algebraic ring.
+#
+
+domain(algebra,
+
+  system(Ring,default,
+         ruleset( 
+             importTransformed(CommutativeGroup,
+                               ruleset($x*$y -> $x+$y,
+                                       One -> Zero,
+                                       inv($x) -> -$x
+                               )),
+             import(SemiGroup),
+             $x*($y+$z) -> $x*$y+$x*$z,
+             ($y+$z)*$x -> $y*$x+$z*$x
+         ),
+         FirstTop)
+
+);
+       

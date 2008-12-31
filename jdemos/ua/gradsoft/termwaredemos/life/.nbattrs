@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE attributes PUBLIC "-//NetBeans//DTD DefaultAttributes 1.0//EN" "http://www.netbeans.org/dtds/attributes-1_0.dtd">
+<attributes version="1.0">
+    <fileobject name="Life1Main.java">
+        <attr name="NetBeansAttrArguments" serialvalue="aced0005757200135b4c6a6176612e6c616e672e537472696e673badd256e7e91d7b470200007870000000027400022d49740022633a5c686f6d655c727373685c776f726b5c5465726d576172655c73797374656d73"/>
+    </fileobject>
+    <fileobject name="Life2Main.java">
+        <attr name="NetBeansAttrArguments" serialvalue="aced0005757200135b4c6a6176612e6c616e672e537472696e673badd256e7e91d7b470200007870000000027400022d49740022633a2f686f6d652f727373682f776f726b2f5465726d576172652f73797374656d73"/>
+    </fileobject>
+</attributes>

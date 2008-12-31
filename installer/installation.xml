@@ -1,0 +1,198 @@
+<!--
+    Document   : installer.xml
+    Created on : 10/06/2003, 12:57
+    Author     : Ruslan Shevchenko
+    Description:
+        IzPack install file for TermWare
+-->
+<installation version="1.0">
+ <info>
+  <appname>TermWare</appname>
+  <appversion>2.3.1</appversion>
+  <url>http://www.gradsoft.ua</url>
+  <authors>
+   <author name="Ruslan Shevchenko" email="Ruslan@Shevchenko.Kiev.UA" />
+   <author name="Grad-Soft ltd" email="info@gradsoft.ua" />
+  </authors>
+ </info>
+ <guiprefs height="480" resizable="yes" width="640"/>
+ <variables/>
+ <locale>
+   <langpack iso3="eng" />
+ </locale>
+ <resources>
+   <res id="LicencePanel.licence" src="../docs/LICENSE.eng" />
+ </resources>
+ <panels>
+  <panel classname="HelloPanel"/>
+  <panel classname="LicencePanel"/>
+  <panel classname="TargetPanel"/>
+  <panel classname="PacksPanel"/>
+  <panel classname="InstallPanel"/>
+  <panel classname="FinishPanel"/>
+ </panels>
+<packs>
+ <pack name="library" required="yes">
+  <description> Core library, packaged as jar </description>
+  <file src="../lib/TermWare-2.3.1.jar" targetdir="$INSTALL_PATH/lib" />
+  <file src="../lib/TermWare2jsr94-2.3.1.jar" targetdir="$INSTALL_PATH/lib" />
+  <file src="../lib/junit-3.8.jar" targetdir="$INSTALL_PATH/lib" />
+  <file src="../lib/jsr94.jar" targetdir="$INSTALL_PATH/lib" />
+ </pack>                         
+ <pack name="launchers" required="no">
+  <description> script for launching interpreter </description>
+  <file src="../bin/TermWare.cmd.sh" targetdir="$INSTALL_PATH/bin" />
+  <file src="../bin/TermWare.APIGen.sh" targetdir="$INSTALL_PATH/bin" />
+<!--  <file src="../bin/TermWare.gui.sh" targetdir="$INSTALL_PATH/bin" /> -->
+  <file src="../bin/TermWare.cmd.bat" targetdir="$INSTALL_PATH/bin" />
+  <file src="../bin/TermWare.APIGen.bat" targetdir="$INSTALL_PATH/bin" />
+<!--  <file src="../bin/TermWare.gui.bat" targetdir="$INSTALL_PATH/bin" /> -->
+  <parsable targetfile="$INSTALL_PATH/bin/TermWare.cmd.sh" os="unix"/>
+  <parsable targetfile="$INSTALL_PATH/bin/TermWare.APIGen.sh" os="unix"/>
+<!--  <parsable targetfile="$INSTALL_PATH/bin/TermWare.gui.sh" os="unix"/> -->
+  <parsable targetfile="$INSTALL_PATH/bin/TermWare.cmd.bat" os="windows"/>
+  <parsable targetfile="$INSTALL_PATH/bin/TermWare.APIGen.bat" os="windows"/>
+<!--  <parsable targetfile="$INSTALL_PATH/bin/TermWare.gui.bat" os="windows"/> -->
+ </pack>
+ <pack name="predefined systems" required="no">
+  <description> Some predefined TermWare systems </description>
+  <fileset dir="../systems/" targetdir="$INSTALL_PATH/systems" >
+    <exclude name="CVS" />
+    <exclude name="**/CVS" />
+    <exclude name="CVS/*" />
+    <exclude name="**/CVS/*" />
+  </fileset>
+ </pack>
+ <pack name="api documentation" required="no" >
+  <description> TermWare javadoc API </description>
+  <fileset dir="../jdocs/" targetdir="$INSTALL_PATH/jdocs/">
+    <exclude name="CVS" />
+    <exclude name="**/CVS" />
+    <exclude name="CVS/*" />
+  </fileset>
+  <fileset dir="../docs/" targetdir="$INSTALL_PATH/docs/">
+      <include name="TermWareBNF.html"/>
+  </fileset>
+ </pack>
+ <pack name="TermWare script functions help" required="no" >
+  <description> API of predefined systems </description>
+  <fileset dir="../docs/TAPI/" targetdir="$INSTALL_PATH/docs/TAPI" >
+    <exclude name="CVS" />
+    <exclude name="**/CVS" />
+    <exclude name="CVS/*" />
+    <exclude name="**/CVS/*" />
+  </fileset>
+ </pack>
+ <pack name="semantics description (english)" required="no" >
+  <description> Descripion of TermWare semantics in English </description>
+  <file src="../docs/Semantics_eng.dvi" targetdir="$INSTALL_PATH/docs" />
+  <fileset dir="../docs/Semantics_eng/" targetdir="$INSTALL_PATH/docs/Semantics_eng" >
+    <exclude name="CVS" />
+    <exclude name="**/CVS" />
+    <exclude name="CVS/*" />
+    <exclude name="**/CVS/*" />
+  </fileset>
+ </pack>
+ <pack name="semantics description (russian)" required="no" >
+  <description> Descripion of TermWare semantics in Russian </description>
+  <file src="../docs/Semantics_rus.dvi" targetdir="$INSTALL_PATH/docs" />
+  <fileset dir="../docs/Semantics_rus/" targetdir="$INSTALL_PATH/docs/Semantics_rus" >
+    <exclude name="CVS" />
+    <exclude name="**/CVS" />
+    <exclude name="CVS/*" />
+    <exclude name="**/CVS/*" />
+  </fileset>
+ </pack>
+ <pack name="Developer Tutorial (russian)" required="no" >
+  <description> Step-by-step tutorial for TermWare and Java API </description>
+  <file src="../docs/tutorial_rus.odt" targetdir="$INSTALL_PATH/docs" />
+ </pack>
+ <pack name="jsr{94,223} notes (english and russian)" required="no">
+  <description> Implementation notes for JSR 223 and JSR 94 </description>
+  <file src="../docs/jsr94api_eng.odt" targetdir="$INSTALL_PATH/docs" />
+  <file src="../docs/jsr94api_rus.odt" targetdir="$INSTALL_PATH/docs" />
+  <file src="../docs/jsr223api_eng.odt" targetdir="$INSTALL_PATH/docs" />
+  <file src="../docs/jsr223api_rus.odt" targetdir="$INSTALL_PATH/docs" />
+ </pack>                         
+ <pack name="license" required="yes">
+  <description> text of license agreement </description>
+  <file src="../docs/LICENSE.eng" targetdir="$INSTALL_PATH/docs" />
+  <file src="../docs/LICENSE.rus" targetdir="$INSTALL_PATH/docs" />
+ </pack>                         
+
+
+ <pack name="demos" required="no">
+  <description> TermWare Demo Applications </description>
+  <!-- source code -->
+  <fileset dir="../jdemos/" targetdir="$INSTALL_PATH/jdemos" >
+    <exclude name="CVS" />
+    <exclude name="**/CVS" />
+    <exclude name="CVS/*" />
+    <exclude name="**/CVS/*" />
+    <exclude name="**/*.class" />
+  </fileset>
+  <!-- scripts -->
+  <file src="../bin/Life1.sh" targetdir="$INSTALL_PATH/bin" />
+  <file src="../bin/Life2.sh" targetdir="$INSTALL_PATH/bin" />
+  <file src="../bin/Life1.bat" targetdir="$INSTALL_PATH/bin" />
+  <file src="../bin/Life2.bat" targetdir="$INSTALL_PATH/bin" />
+  <file src="../bin/manners.bat" targetdir="$INSTALL_PATH/bin" />
+  <file src="../bin/mannersData.bat" targetdir="$INSTALL_PATH/bin" />
+  <parsable targetfile="$INSTALL_PATH/bin/Life1.sh" os="unix"/>
+  <parsable targetfile="$INSTALL_PATH/bin/Life2.sh" os="unix"/>
+  <parsable targetfile="$INSTALL_PATH/bin/Life1.bat" os="windows"/>
+  <parsable targetfile="$INSTALL_PATH/bin/Life2.bat" os="windows"/>
+  <parsable targetfile="$INSTALL_PATH/bin/manners.bat" os="windows"/>
+  <parsable targetfile="$INSTALL_PATH/bin/mannersData.bat" os="windows"/>
+  <!-- libs -->
+  <file src="../lib/TermWareDemos-2.3.1.jar" targetdir="$INSTALL_PATH/lib" />
+ </pack>
+ <pack name="source code" required="no">
+  <description> source code of core TermWare library </description>
+  <fileset dir="../jsrc-core/" targetdir="$INSTALL_PATH/jsrc-core" >
+    <exclude name="CVS" />
+    <exclude name="**/CVS" />
+    <exclude name="CVS/*" />
+    <exclude name="**/CVS/*" />
+    <exclude name="**/*.class" />
+  </fileset>
+  <file src="../build.properties" targetdir="$INSTALL_PATH" />
+  <file src="../build.xml" targetdir="$INSTALL_PATH" />
+  <file src="../build-ext.xml" targetdir="$INSTALL_PATH" />
+  <file src="../build-ivy.xml" targetdir="$INSTALL_PATH" />
+  <file src="../ivy.xml" targetdir="$INSTALL_PATH" />
+  <file src="../ivysettings.xml" targetdir="$INSTALL_PATH" />
+  <file src="../installer/installation.xml" targetdir="$INSTALL_PATH/installer" />
+ </pack>
+ <pack name="jsr94 wrapper source code" required="no">
+  <description> source code of JSR-94 TermWare compability library </description>
+  <fileset dir="../jsrc-jsr94/" targetdir="$INSTALL_PATH/jsrc-jsr94" >
+    <exclude name="CVS" />
+    <exclude name="**/CVS" />
+    <exclude name="CVS/*" />
+    <exclude name="**/CVS/*" />
+    <exclude name="**/*.class" />
+  </fileset>
+  <file src="../build.xml" targetdir="$INSTALL_PATH" />
+ </pack>
+
+ <pack name="tests" required="no">
+  <description> tests for java API </description>
+  <fileset dir="../jtests/" targetdir="$INSTALL_PATH/jtests" >
+    <exclude name="CVS" />
+    <exclude name="**/CVS" />
+    <exclude name="CVS/*" />
+    <exclude name="**/CVS/*" />
+    <exclude name="**/*.class" />
+  </fileset>
+  <fileset dir="../jtests-jsr94/" targetdir="$INSTALL_PATH/jtests-jsr94" >
+    <exclude name="CVS" />
+    <exclude name="**/CVS" />
+    <exclude name="CVS/*" />
+    <exclude name="**/CVS/*" />
+    <exclude name="**/*.class" />
+  </fileset>
+
+ </pack>
+</packs>
+</installation>

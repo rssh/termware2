@@ -1,0 +1,52 @@
+
+domain(examples,
+ domain(rec,
+  domain(ctrs,
+    #@option(reduceInFacts(true))
+    system(quicksort,default, 
+     ruleset(
+
+       10 -> s(s(s(s(s(s(s(s(s(s(0)))))))))),
+
+       0 < s($N) -> true,
+       s($N) < 0 -> false,
+       $N < $N -> false,
+       s($N) < s($M) -> $N < $M,
+
+       0 + $N -> $N,
+       s($N) + $M -> s($N+$M),
+
+       0 * $N -> 0,
+       s($N)*$M -> $M+($N*$M),
+
+       !$x -> fact($x),
+       fact(0) -> s(0),
+       fact(s($N)) -> s($N)*fact($N),
+
+       rev(s($N)) -> cons(s($N),rev($N)),
+       rev(0) -> 0,
+
+       split($N,cons($M,$L)) 
+          [ $N<$M ] -> pair($LT,cons($M,$GT)) 
+                          [ unify(split($N,$L),pair($LT,$GT)) ]
+                   !-> pair(cons($M,$LT),$GT)
+                          [ unify(split($N,$L),pair($LT,$GT)) ]
+       ,
+       split($N,nil) -> pair(nil,nil),
+
+       qsort(nil) -> nil,
+       qsort(cons($N,$L)) 
+          [ unify(split($N,$L),pair($LT,$GT)) ] -> append(qsort($LT),cons($N,qsort($GT))),
+                   
+
+       T1->qsort(rev(10)),
+
+       T2->qsort(rev(10*10)),
+
+       T3->qsort(rev(10*(10*10))),
+       T4->qsort(rev(10*10*10))
+
+     ),TopDown)
+  )
+ )
+);

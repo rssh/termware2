@@ -1,0 +1,26 @@
+
+domain(examples,
+  system(Invoicing,default,
+         ruleset(
+           # import general operations.
+           import(general),
+
+           # handle new invoice and set one to paid if possible.
+           @class("ua.gradsoft.termwaredemos.invoicing.Invoice", $invoice) 
+                        [ ! $invoice.isPayed()  
+                           &&
+                            $invoice.getCustomer().getAccountBalance() - $invoice.getAmount() + $invoice.getCustomer().getCreditLimit() > 0
+                        ] 
+                          -> true 
+                             [ $invoice.getCustomer().decrementAccount($invoice.getAmount()) 
+                               && 
+                               $invoice.setPayed(true) ],
+              
+
+           # set credit limit in depend from summary payments.
+           @class("ua.gradsoft.termwaredemos.invoicing.Customer", $customer)
+                        [ $customer.getAccountBalance() > 0 && $customer.getSummaryPayments() > 2000 ] -> true [ $customer.setCreditLimit(500) ]
+       
+         ),
+         FirstTop)
+);

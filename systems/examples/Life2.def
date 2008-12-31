@@ -1,0 +1,27 @@
+
+
+
+domain(examples,
+
+  system(Life2,javaFacts(Life2DB,"ua.gradsoft.termwaredemos.life.Life2Facts"),
+         ruleset( 
+             # $T - list of pairs to test.
+
+         l($i,$j) [ n($i,$j) == 3 ] -> CHECKED [ putCell($i,$j) ],
+
+         l($i,$j) [ existsCell($i,$j) && n($i,$j) == 2 ] -> CHECKED [ putCell($i,$j) ],
+
+         l($i,$j) [ !existsCell($i,$j) && n($i,$j) == 2 ] -> CHECKED [ removeCell($i,$j) ] ,
+
+         l($i,$j) [ n($i,$j) > 3 || n($i,$j) < 2 ] -> CHECKED [ removeCell($i,$j) ],
+
+        [ CHECKED : $T ] -> $T,
+
+        [ ] -> $T  [ showGeneration() && generateNextTestSet($T) ]
+               
+                ),
+         FirstTop)
+        
+);
+
+       

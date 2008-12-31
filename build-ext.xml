@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<!-- part of build file for TermWare project (extensions)-->
+<project name="TermWare.ext" default="build" basedir=".">
+
+<property file="build.properties" />
+
+ <!-- task definitions -->
+ 
+ 
+ <taskdef name="izpack" classpath="${izpackhome}/lib/compiler.jar"
+         classname="com.izforge.izpack.ant.IzPackTask"/>
+
+ <!-- targets -->
+
+
+ <import file="build.xml" />
+
+ <target name="installation" depends="docs,installation.only" />
+
+ <target name="installation.only">
+  <izpack input="installer/installation.xml"
+          output="installer/TermWareInstaller-${termware.version}.jar"
+          installerType="standard"
+          basedir="installer"
+          IzPackDir="${izpackhome}"
+  />
+ </target>
+
+    <taskdef name="javachecker"  classname="ua.gradsoft.javachecker.ant.JavaCheckerTask">
+     <classpath>
+      <pathelement location="${jchhome}/lib/TermWare2.jar"/>
+      <pathelement location="${jchhome}/lib/TermWareJPP.jar"/>
+      <pathelement location="${jchhome}/lib/JavaChecker2.jar"/>
+      <pathelement location="${jchhome}/lib/JavaChecker2Annotations.jar"/>
+     </classpath>
+    </taskdef>    
+
+   <target name="check" depends="build" >
+     <javachecker jchhome="${jchhome}" 
+         input="jsrc-core" output="jchreport.txt" />
+   </target>
+
+   <taskdef name="odt2html" classname="ua.gradsoft.odt2html.Odt2HtmlAntTask">     
+    <classpath>         
+     <pathelement location="${odt2htmlhome}/ODT2HTML.jar"/>     
+    </classpath>
+   </taskdef>
+
+   <target name="webdocs">
+    <odt2html input="docs/tutorial_rus.odt" output="docs/tutorial_rus.html"/>
+    <odt2html input="docs/tutorial_eng.odt" output="docs/tutorial_eng.html"/>
+    <odt2html input="docs/jsr94api_rus.odt" output="docs/jsr94api_rus.html"/>
+    <odt2html input="docs/jsr94api_eng.odt" output="docs/jsr94api_eng.html"/>
+    <odt2html input="docs/jsr223api_rus.odt" output="docs/jsr223api_rus.html"/>
+    <odt2html input="docs/jsr223api_eng.odt" output="docs/jsr223api_eng.html"/>
+   </target>
+
+ <target name="all" depends="build,clean,installation"/>
+
+ <target name="publish" depends="build,clean,installation,publish.only" />
+
+</project>

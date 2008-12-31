@@ -1,0 +1,188 @@
+
+domain(examples,
+ domain(rec,
+  domain(ctrs,
+    #@option(reduceInFacts(true))
+    #--@option(loggedEntity(SystemReductions))
+    system(bubblesort,default, 
+     ruleset(
+       import(general,if),
+
+       0 < s($N) -> true,
+       s($N) < 0 -> false,
+       $N < $N -> false,
+       s($N) < s($M) -> $N < $M,
+
+       0 + $N -> $N,
+       s($N) + $M -> s($N+$M),
+
+       0 * $N -> 0,
+       s($N)*$M -> $M+($N*$M),
+
+       !$x -> fact($x),
+       fact(0) -> s(0),
+       fact(s($N)) -> s($N)*fact($N),
+
+       rev(s($N)) -> cons(s($N),rev($N)),
+       rev(0) -> 0,
+
+       cons($N,cons($M,$L)) [ $M < $N ] -> cons($M,cons($N,$L)),
+
+
+
+
+#get normal form for: 
+ T1->
+  cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(
+    s(s(0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(0), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), cons(s(s(s(0))), cons(s(s(0)), cons(s(s(s(0))), cons(s(s(s(s(s(s(
+    0)))))), nil)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))),
+    
+
+       T2->rev(!(s(s(s(s(s(0)))))))
+
+     ),BottomTop)
+  )
+ )
+);

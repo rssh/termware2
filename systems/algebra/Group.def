@@ -1,0 +1,13 @@
+
+domain(algebra,
+
+  system(Group,default,
+         ruleset( 
+             import(Monoid),
+             $x*inv($x) -> One,
+             inv(x)*$x -> One
+                ),
+         FirstTop)
+
+);
+       

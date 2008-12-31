@@ -1,0 +1,852 @@
+\documentclass[10pt]{article}
+\usepackage[OT2,T2A]{fontenc}
+\usepackage[koi8-u]{inputenc}
+%\usepackage{pscyr}
+
+%2124833
+
+\usepackage{html}
+
+\newcommand{\CmBase}{../..}
+\newcommand{\APIBase}{\CmBase/jdocs/ua/gradsoft/termware}
+\newcommand{\TAPIBase}{\CmBase/docs/TAPI/}
+
+\title{ TermWare: Описание Семантики \newline
+        \small{DocumentId:GradSof-TermWare-r-Sm-20.06.2001-4}
+      }
+
+
+
+\bibliographystyle{plain} 
+
+\begin{document}
+                                               
+\maketitle{}
+
+\tableofcontents
+
+\section{ Введение (Introduction) }
+
+ Termware - система компьютерной алгебры, предназначенная для встраивания 
+в системы языковой обработки. В этой статье определяется формальная модель,
+лежащая в основании семантики языка, бегло описывается синтаксис языка
+TermWare и внутреннее строение
+Java API. Текст рассчитан на знакомство читателя как с практикой объектно -
+ ориентированного и функционального программирования, так и с основами 
+ математической логики.
+Впрочем, если Вы --- программист, думающий использовать TermWare в своих проектах,
+то чтение первой части можно заменить чтением ее первого параграфа.
+
+\section{  Формальная модель (Formal Model) }
+
+ Здесь построена обычная терминальная алгебра, где объектами языка являются
+термы (выражения вида $f_i(x_1\dots x_n)$, переменные и элементарные 
+типы данных, такие-же как во всех языках функционального программирования)  
+с одним отличием от стандартного подхода: конструктор упорядоченного множества 
+является  выделенным термом и операции подстановки на этих термах сохраняют порядок.
+
+ Остаток раздела посвятим обычному утомительному построению:
+
+\subsection{ Алфавит (ABC) }
+\begin{enumerate}
+ \item Множество примитивных типов (внимание, это не многосортная алгебра)
+  
+            $\Sigma_{pt}= \{ CHAR, SHORT, INT, BigDecimal, BigInteger, BOOL, STRING, ATOM \}$
+ \item Множество типизированных констант $\Sigma_c^{pt} = \{ c_i^{pt} \}$, 
+ с каждой константой связанно значение, на множестве соответствующего
+ примитивного типа, т. е.
+   $val:\Sigma_c^{pt} -> Dom^{pt}$, где 
+   \begin{itemize}
+     \item $Dom^{<Primitive Type>}$ - множество примитивных типов, представляемое соответствующими константами 
+
+     \item $Dom^{ATOM}$ - множество атомарных неинтерпритируемых значений.
+      Среди атомов выделим атом \verb|NIL|, играющий специальную роль.
+   \end{itemize}
+ \item Множество терминальных символов $\Sigma_t = \{ t_i \}$
+ \item Множество подстановочных символов $\Sigma_x = \{ x_i \}$
+ \item Скобки '(' и ')' и знак зяпятой ','
+ \item Множество модельных функциональных символов $\Sigma_f = \{ f_i \}$
+\end{enumerate}
+
+
+\subsection{ Термы (Terms) }
+
+Определим множество конкретных термов $T_c$ :
+\begin{itemize}
+ \item $\forall c_i \in \Sigma_c$, $c_i \in T_c$
+ \item $\forall t \in \Sigma_t, \forall r \in T_c^{+} = \{T_1, \dots T_n\} $
+         $t(T_1,\dots T_n) \in T_c$ 
+\end{itemize}
+
+ И множество подстановочных термов $T_v$
+\begin{itemize}
+ \item $\forall t \in T_c \{ t \in T_v \}$
+ \item $\forall x \in \Sigma_x$, $x \in T_v$
+ \item $\forall t \in \Sigma_t, r \in T_v^{+} = \{T_1,\dots T_n\} $
+         $t(T_1,\dots T_n) \in T_v$
+\end{itemize}
+
+ Терм, принадлежащий $T_v / T_c$ будем называть термом со свободными 
+переменными, для каждого терма $T$ множество входящих в него подстановочных
+символов будем называть множеством свободных переменных этого терма и
+обозначать как $v(T)$.
+
+\subsection{ Операции (Operations) }
+ Определим на нашей системе термов следующие модельные функции:
+ \begin{itemize}
+  \item $typename0: T_v \to INT$, отображающий различные типы в различные целые константы.
+  \item $name: T_v \to STRING$
+  \begin{itemize}
+    \item $name(c_i)=STRING(c_i)$
+    \item $name(x_i)=STRING(x_i)$
+    \item $name(t_i(1_1,\dots r_n))=STRING(t_i)$
+  \end{itemize}
+  \item $arity: T_v \to INT$
+  \begin{itemize}
+    \item $arity(c_i)=0$
+    \item $arity(x_i)=0$
+    \item $arity(t(x_1,\dots x_n))=n$
+  \end{itemize}
+  \item $subterm: T_v \times \{INT\} \to T_v$
+  \begin{itemize}
+    \item $\forall j\in \{INT\}: subterm(c_i,j)=NIL$
+    \item $\forall j\in \{INT\}: subterm(x_i,j)=NIL$
+    \item $\forall t\in T_v, j\in \{INT\}: j<1 \to subterm(t,j)=NIL$
+    \item $$\forall t in T_v, j\in \{INT\}: 0<j<arity(t) \to subterm(t(t_1,\dots,t_n),j)=t_j$$  если считать, что на $j$-том месте находится подтерм $t_j$.
+    \item $\forall t\in T_v, j\in \{INT\}: j>=arity(t) \to subterm(t,j)=NIL$
+  \end{itemize}
+  \item $equal T_v\times T_v \to BOOL$ (Введем для $equal(x,y)$ 
+         сокращение $x==y$ 
+  \begin{itemize}
+    \item $c_i == c_j$, если $c_i$ и $c_j$ представляют один и тот-же модельный
+         объект.
+    \item $x_i == x_j$, всегда.
+    \item $t_1(r_1,\dots,r_n) == t_2(q_1,\dots q_k)$, если $t_1$ и $t_2$ тот-же
+     терминальный символ, $r==n$ и $\forall i \in {1\dots n} r_i == q_i$
+  \end{itemize}
+  \item $less: T_v\times T_v \to BOOL$ 
+      (Введем для  $less(x,y)$ сокращение $x<<y$)
+  \begin{itemize}
+    \item $\forall x !=NIL, NIL << x $
+    \item $\forall c_i, c_j , typename(c_i)==typename(c_j) \to c_i < c_j \Leftrightarrow c_i << c_j  $, где $<$ - естественное упорядочивание модельной области.
+    \item $\forall t_1,t_2: typename0(t_1)='atom', typename0(t_2) != 'atom' t_1 << t_2$
+    \item $\forall t_1,t_2: typename0(t_1)='string', typename0(t_2) != 'atom' \land typename0(t_2) != 'string' : t_1 << t_2$
+    \item $\forall t_1,t_2: typename0(t_1)='boolean', typename0(t_2) != 'atom' \land typename0(t_2) != 'string' \land typename(0,t_2)!='boolean': t_1 << t_2$
+    \item $\forall t_1,t_2: typename0(t_1)='int', typename0(t_2) != 'atom' \land typename0(t_2) != 'string' \land typename0(t_2)!='boolean' \land typename0(t_2)!='int': t_1 << t_2$
+    \item $\forall t_1,t_2 \in T_v: arity(t_1) < arity(t_2) \to t_1 < t_2$
+    \item $\forall t_1(t_11,\dots,t_1n),t_2(t_21,\dots,t_2n) \in T_v, t_1.getName() < t2.getName() \to t1 << t2$
+    \item $\forall t_1(t_11,\dots,t_1n),t_2(t_21,\dots,t_2n), T_v, t_1.getName() = t2.getName() : t_11 << t_21 \to t1 << t2$
+    \item $\forall t_1(t_11,\dots,t_1n),t_2(t_21,\dots,t_2n), T_v, t_1.getName() = t2.getName() \land t_11 = t_21 : t_1(t_12 \dots t_1n) << t_2(t_22 \dots t_2n) \to t1 << t2$
+    \item $\forall t_1,t_2: t_1==t_2 \Leftrightarrow \not(t_1 <<t2) \land \not(t_2<<t_1))$
+  \end{itemize}
+    т. е.  множество термов просто частично-упорядоченно. Зачем - это 
+  позволяет нам выделить конструктор упорядоченного множества.
+    \item  $set_n(t_1,\dots,t_n)$ - терм, обозначающий упорядоченное множестов 
+  из $n$ элементов. 
+    $$s=set_n(t_1,\dots,t_n): \forall 0i<j<n \; s.subterm(i)<<s.subterm(j)$$
+  \item Теперь мы можем определить $fv(T_v)\to T_v$  - множество 
+  свободных переменных $t$.
+    \begin{itemize}
+      \item $fv(c_i)=NIL$
+      \item $fv(x_i)=set_1(x_i)$
+      \item $fv(f(t_1,\dots,t_n))=set(x_i)\cup freeset(f(t_2,\dots,t_n))$
+    \end{itemize}
+    И $fvi(x)$ - множество индексов термов.
+ \item Каждый подтерм в терме однозначно идентифицируется последовательностью цифр 
+       - пути от головы терма.
+   Т. е. существует $subterm^*:T_v\times INT^* \to T_v$
+   \begin{itemize}
+     \item $subterm^*(x_i,k)=NIL$
+     \item $subterm^*(c_i,k)=NIL$
+     \item $$subterm^*(t(t_{1}\dots t_{n}),K)=\left\{\begin{array}{l l}
+             NIL  &  length(K)=0 \\
+             NIL  &  K[0] > n \\
+             t_{k[0]}  &  K[0] < n \land length(K)=1\\
+             subterm^*(t_{k[0]},K/K[0]) & K[0]<n \land length(K)>1 \\
+            \end{array}\right.$$
+   \end{itemize}
+ \item Как обычно, подстановка свободных переменных - это множество пар 
+   $(x_i,t_i)$, которые мы будем обозначать как 
+     $substitution([x_1,t_1]\dots [x_n,t_n]) \in S$ В случае, когда это
+  не будет вызывать неоднозначности, мы будем также обозначать ее как
+  $s([x_1,t_1]\dots [x_n,t_n])$ или просто как $s[x_i,t_i]$
+ \item Сам процесс подстановки $subst(t,s)$ определяется следующим образом:
+  \begin{itemize} 
+    \item $$
+  subst(t,s([x_1,t_1]\dots [x_n,t_n]))=
+             subst(t,\dots(subst(t,s[x_1,t_1])\dots,s[x_n/t_n])
+    $$
+    \item $subst(NIL,s)=NIL$
+    \item $subst(c_i,s)=c_i$
+    \item $$subst(x_i,s[x_j,t_j])=\left\{\begin{array}{l l}
+         t_j & i = j \\
+         x_i & i \neq j \\
+        \end{array}\right.$$
+    \item $$subst(t(t_1\dots t_n),s[x_1,y_1])=\left\{\begin{array}{ l l}
+               t(subst(t_1,s[x_1,y_1])\dots subst(t_n,s[x_1,y_1])) & x_1\neq t(t_1\dots t_n) \\
+               x_1 &  t(t_1\dots t_n) = y_1  \\
+          \end{array}\right.$$
+  \end{itemize} 
+ \item  Определим связную унификацию как $bound\_unify : T_v, \times T_v \times S \to T_v \times S $ - мы по существующей подстановке и двум термам получаем унификатор и уточненную подстановку. 
+   \begin{itemize} 
+     \item $bound\_unify(NIL,x,S) = NIL $
+     \item $bound\_unify(x,NIL,S) = NIL $
+     \item $$bound\_unify(c_i,c_j,S) = \left\{\begin{array}{l l}
+        NIL,S & c_j != c_j \\
+        c_i,S & c_i = c_j \\
+      \end{array}\right.$$ 
+     \item $bound\_unify(x_i,t,S) = t, S\land[x_i,t]$
+     \item $bound\_unify(t,x_i,S) = t, S\land[x_i,t]$
+     \item $bound\_unify(x_i,x_j,S) = x_i, S\land[x_i,x_j] $
+     \item 
+         $$bound\_unify(t_1(t_{11}\dots t_{1n}),t_2(t_{21}\dots t_{2m}),S) = $$
+         $$=
+         \left\{\begin{array}{l l}\\
+           NIL,S & n!=m \\
+           NIL,S & name(t_1) != name(t_2) \\
+           t_1(bound\_unify(t_{11},t_{21},S)\dots bound\_unify(t_{1n},t_{2n},S)),\land S \\
+         \end{array}\right.$$
+   \end{itemize} 
+ \item  И несвязную унификацию как $free\_unify : T_v, \times T_v \to T_v \times S $ - мы по двум термам получаем унификатор и уточненую подстановку, при этом
+ предполагая, что термы не связаны общим набором переменных.
+ т. е.
+  \begin{itemize}
+    \item $free\_unify(t_1,t_2)=bound\_unify(t_1,free\_fv(t_2,fv(t_1)))$
+    \item $free\_fv(c_i,(x_1\dots x_n))=c_i$ 
+    \item $free\_fv(x_i,(x_1\dots x_n))=\left\{\begin{array}{l l}
+                x_i & i>n \\ 
+                x_k, x_k\not\in fv(t_1) \land x_k\not\in fv(t_2) & \\
+           \end{array}
+           \right.$
+  \end{itemize}
+    
+ \end{itemize}
+ 
+
+ Правило переписывания это тройка: $(X,  t_{in},t_{out})$ где:
+ \begin{itemize}
+  \item $X = {x_i}$ - множество свободных переменных.
+  \item $t_{in} \in T_v$  входной терм, такой-что $fv(t_{in})=X$
+  \item $t_{out} \in T_v$  выходной терм, такой-что $fv(t_{out})\in X$
+ \end{itemize}
+
+
+
+  Семантика действия переписывания определяется следующим выражением:
+   $$ apply(t, t_{in}, t_{out}) = subst(t_{out},free\_unify(t_{in},t))$$
+
+ Расширим действия переписывания на множество правил:
+  $$                                    
+   apply(t,\{r_1\dots r_n\})=\{ apply(t,r_1) \dots apply(t,r_n)\} 
+  $$
+
+  и на множество свободных 
+  термов\footnote{ под множеством свободных термов мы будем понимать 
+  множество термов определенное с точностью до переименования пропозициональных
+  символов}:
+  
+  $$                                    
+   apply(\{t_1\dots t_n\}, R)=\cup apply(t_i,R)
+  $$
+
+ Естественно, само правило может быть представленно в виде терма:
+    $rule(vars,t_{in},t_{out})$ где:
+   \begin{itemize}
+     \item $vars$ - множество переменных, терм вида $set(x_1,\dots x_n)$
+     \item $t_{in}$ и $t_{out}$ - соответственно входной и выходной термы.
+   \end{itemize}
+
+
+  Будем говорить, что множество термов $x$ переписывается в 
+  множество термов $y$, если  существует цепочка 
+   $z_1\dots z_n$ такая, что
+  $$z_1 = x \land z_n=y \land \forall i \in \{1\dots n\} z_{n+1}\in apply(z_n,R)$$
+
+  Наконец, будем говорить что множество термов $T$ сходится относительно 
+ множества правил $R$ если существует неподвижная точка уравнения:
+
+  \begin{itemize}
+   \item $apply^*(T,R) = X:  X = apply(X,R)$
+  \end{itemize}                                     
+
+  Множество правил $R$ называется сходящимся, относительно конечного
+множества термов $T$, если $apply^*(T,R)$ - конечно.
+
+  Множество правил обладает свойством нетеровости если
+$$\forall t\in T; r_1,r_2 \in R apply(t,r_1)!=apply(t,r_2) \exists R^* \in R :$$
+ $$
+    apply(apply(t,r_1),R^*)=apply(apply(t,r_2),R^*) \land apply(t_1,R^*) конечно $$ 
+
+  Таким образом мы приходим к широко известной теории переписывающих правил,
+с некоторыми отличиями от канонических формулировок:
+  \begin{itemize}
+    \item мы работаем с множествами, а не с единичными термами -
+    это уеличивает общность формулировок 
+     (например $apply^*(X,R)$ существует всегда) за ту плату, что основное
+    определение не конструктивно
+    \item рефлексивные определения этого исчисление непосредственно встроенны
+   в само исчисление.
+    \item Операции работы с упорядоченными множествами включены непосредственно в 
+  исчисление термов, а не эмулируются набором нормализирующих правил, как обычно.
+  \end{itemize}
+
+  Эти отличия не добавляют ничего существенного нового к математическим свойствам
+алгебры кроме того, что чисто технически с нею удобно работать.
+
+
+\subsection{ Упорядоченные множества правил }
+
+ Мы можем расширить семантику применения правил не ненетеровы системы, фиксируя порядок применения правил в несводимых критических парах.
+ Т. е. правила $p$, $s$ образуют критическую пару, если существует такой терм $t$, что $apply(p,t) \neq apply(s,t)$.  Для сходящихся систем для любого терма $t$ существует общая редукция $apply(p,t)$ и $apply(s,t)$. Однако много практически интересных вещей лучше описываются с помощью локально-неконфлюэнтных правил с фиксированным порядком применения.
+
+ Введем частичное упорядочивания переписывающих правил по 'степени конкретности' их входных образцов. Будем писать $t1 {\le}_{c} t2$ когда $t1$ 'более конкретно' чем $t2$. А что такое 'более конкретно' ? - это означает что $t1$ может быть представлен как частичный случай $t2$, т. е. существует подстановка переменных $s$ такая, что  $subst(t2,s) \equiv t1$. Эквивалентное определение: $\forall t: free\_unify(t,t1) \Rightarrow free\_unify(t,t2)$.
+ 
+  Далее, пусть $p=(in_{p} \to out_{p})$ и $s=(in_{s}\to out_{s})$ два правила, формирующие критическую пару. Мы говорим, что $p \le_{c} s$ if $in_{p} {\le}_{c} in_{s}$, и определим порядок применения как "более конкретный образец применяется первым", т. е.
+$$
+ apply(\{p,s\},t)=\left\{
+  \begin{array}{l l}
+    apply(p,t) & p \le_{c} s \\
+    apply(s,t) & s \le_{c} p \\
+    \iota\{apply(p,t),apply(s,t)\} & p \sim_{c} s\\
+  \end{array}
+ \right.
+$$
+ где $\iota$ -- операторо недерменисткого выбора, зависящий от стратегии переписывания.
+
+ Легко показать что для каждого набора правил ${r_{1}\dots r_{n}}$, где  $\forall i,j : i\neq j \Rightarrow \not {r_i} \sim_{c} r_j$ может быть построена эквивалентная система правил без ограничений на порядок применения.
+
+
+\subsection{Действия (Actions) }
+
+ Следующий вопрос, который следует рассмотреть - это представление вычислений
+над термами. Обычный подход (множество правил, преобразующих входное множество
+термов в выходное) нас не устраивает, так как в реальном мире нам нужно
+несколько больше:
+ \begin{itemize}
+   \item В прикладных задачах, в отличие от математического ваккума, есть некоторая внешняя среда, 
+   у которой мы можем запрашивать необходимую информацию по мере требования, равно как и сообщать.
+   \item От элементов програмных комплексов нам часто требуется не преобразование входа
+    в выход, а поведение - последовательность обменов с внешней стредой.
+   \item Сам набор правил преобразования может быть динамичен.
+ \end{itemize}
+
+ Примерами таких применений могут быть: набор правил для определения следуйщих
+действий в каком-либо бизнес-процессе, зависящий от переменных этого процесса, 
+или процесс генерации кода, зависящий от конкретной архитектуры, или правила
+вывода, представляемые фактами в дедуктивной базе данных.                                                              
+
+Следовательно, нам необходимо определить операционную семантику, включив в нее
+в явном виде взаимодействие с внешней средой и изменение набора правил в
+зависимости от состояния.
+
+
+Терминальная машина это четверка:  
+  $<S, E, \phi_s,\phi_e>$                                                             
+ где:
+ \begin{itemize}
+   \item $S=<S_t,S_r>$ - состояние, пара из
+   \begin{itemize}
+     \item $S_t$ - множество термов.
+     \item $S_r$ - множество активных правил переписывания.
+   \end{itemize}
+     Заметим, что это разделение - довольно условно, так как правила переписывания
+     представлены терминами специального вида.
+    \item $E$  - представление среды в системе        
+    \item $\phi_s:S\times X \times E \to S\times Y$ - функция преобразования системы.
+    \item $\phi_e: E \times Y -> E$ - функция реакции среды.
+ \end{itemize}                                     
+
+ Поведение терминальной машины определяется следующим преобразованием за 
+единицу дискретного времени:
+
+ $$<S,E,X> -> <\phi_s(X,E,S)|_{S},\phi_e(\phi_s(X,E,S)|_{Y})$$
+
+(тут $x|_{Y}$ обозначает проекцию $x$ на координату $Y$ в обычном 
+ теоретико-множественном смысле).
+
+Нижеприведенная диаграмма может быть более ясна для понимания.
+
+\begin{verbatim}
+          phi_s
+ <S,E,X> ----------> <S',Y'>   phi_e
+    |                       ----------> E'
+    ---------------------E
+\end{verbatim}
+ 
+                     
+\begin{itemize}
+ \item $\phi_s$ - операция применения $S_r$ к $S_f$ в соответствии с некоторой
+     стратегией, продуцирующая влияние на среду $Y$ как побочный эффект.
+     (с точки зрения программирования - операции вывода) 
+     Будем говорить, что система нормальна, если $\phi_s$ определяет 
+     неподвижную точку применения $S_r$ к $S_f$
+ \item $\phi_e$ - интерпритация $env(y)$ окружающей средой. 
+\end{itemize}
+              
+\subsection{ Терминальная система со взаимодействием (term system with actions) }
+
+Какие изменения нам требуются внести для отражения требований операционной 
+семантики в систему переписывания термов - просто добавить некоторый синтаксис
+взаимодействия со средой : 
+
+Пара вход/выход ($X:x\to y$) заменяется на четверку ($X:(x,e_{in})\to (y,e_{out})$,
+где
+ \begin{itemize}
+  \item $x$, $y$ - входной и выходной терм, как и раньше.
+  \item $e_{in}$ - запрос состояния среды.
+  \item $e_{out}$ - операция воздействия на среду.
+ \end{itemize}
+  
+Будем обозначать эту четверку как $x [ e_{in} ]  \to  y [ e_{out} ]$.
+  Выражение $x[e_{in}]$ для терма $t$ можно интерпретировать как сопоставление
+с образцом $x$ при выполнении $subst(e_{in},snd(free\_unify(t,x)))$ 
+(пусть $snd(free\_unify(t,x)) = s$), 
+$y[e_{out}]$ - как подстановка унификации в $y$ и выполнения $subst(e_out,s)$.
+   
+ 
+\section{ Язык TermWare (Language) }
+
+
+Лексемы:
+\begin{itemize}
+ \item Константы - числа и строки с обычной семантикой
+ \item Переменные - \verb|$x|
+ \item Идентификаторы. -
+ \item Конструкторы термов: $f(x_0\dots x_n)$
+ \item Set-Образцы : термы вида $set_pattern(x,y)$, обозначения - $\{ x: y \}$, унифицирующиеся с множеством, состоящим из унификатора $х$ и множества $y$ 
+\end{itemize}
+        
+Синтаксис:                                                    
+\begin{itemize}
+ \item Просто алгебра термов.
+ \item Операторы как сокращения.       
+ \begin{itemize}
+   \item $x \to y$ - сокращение для $rule(x,y)$
+   \item $x [ c ] \to y$ - сокращение для $if\_rule(x,c,y)$
+   \item $x [ c ] \to y [r]$ - сокращение для $if\_rule(x,c,action(y,r))$
+   \item $x [ c ] \to y | [ c1 ] \to z | .. !-> f$ - 
+        сокращение для $if\_else_rule(x,c,action(y,r),else-rules,fail-rule(f))$
+   \item $x.y$ -  сокращение для $apply(x,y)$
+   \item $[x,y,\dots z]$ - сокращение для $cons(x,cons(y,\dots,z)\dots)$
+   \item $\{x,y,\dots z\}$ - сокращение для $set(x,y,\dots z)$
+   \item Арифметические выражения с общепринятыми правилами приоритета (если быть более точными - соответствующие
+    синтаксису языка С).
+ \end{itemize}
+\end{itemize}
+
+ см. также 
+ \htmladdnormallink{BNF синтаксис}{\CmBase/docs/TermWareBNF.html}
+
+
+
+\begin{itemize}
+ \item Пред-определенные системы:
+  \begin{itemize} 
+   \item Gen - содержит "естественные" (с точки зрения здравого смысла) правила 
+    для обычных алгебраических операций.
+   \item Sys - содержит примитивы взаимодействия с Java окружением.
+   \item Default - комбинация Gen и Sys.  
+ \end{itemize}
+\end{itemize}
+
+Полное описание встроенных систем содержиться в
+ \htmladdnormallink{описании TermWareAPI}{\TAPIBase/index.html}
+
+
+Примеры систем, определенных с помощью Языка TermWare:
+                    
+\begin{verbatim}
+
+System(BooleanAlgebra,default,
+ruleset(
+ $x && ($x => z) -> $z ,
+ not($x && $y) -> not($x) || not($y) ,
+ not($x || $y) -> not($x) && not($y) ,
+ $x && ($y || $z) -> ($x && $y) || ($x & $z) ,
+ not(not($x)) -> $x , 
+), 
+FirstTop);
+
+System(BooleanLogic,general,
+ ruleset( import(BooleanAlgebra),
+          true => $x -> $x,
+          false => $x -> not($x),
+          true  || $x -> true,
+          false || $x -> $x,
+          true && $x -> $x,
+          false && $x -> false,
+          not(true) -> false,
+          not(false) -> true
+        ), FirstTop);
+
+ 
+\end{verbatim}    
+
+ Здесь, как вы видите все правила сокращенные (без действий и базы данных).
+
+Осмысленная полная модель cистемы, где используются действия и базы
+фактов требует описания семантики фактов и действий (точнее - их 
+программирования на Java) и займет слишком много  места для вхожденья
+в эту статью.
+
+Поэтому ниже мы приведем терминальную систему ``из реальной жизни''
+\footnote{слегка упрощенную}, 
+ а
+семантику фактов и действий опишем неформально:
+
+\begin{verbatim}
+System(BugFixing,DevelopmentProcess,
+ ruleset(
+
+ received($bug_id) -> check_confirmation($bug_id) 
+                                 [ human_task(check_bug($bug_id)) ],
+
+ check_confirmation($bug_id) [ confirmed($tester,$bug_id) ]
+                          -> known($bug_id)
+                                 [ human_task(fix_bug($bug_id),
+                                               write_regression($bug_id)
+                                              ) ],
+
+ check_confirmation($bug_id) [ not_confirmed($tester,$bug_id) ]
+                          -> true [ send_not_confirmed($bug_id,$tester) ],
+
+
+ known($bug_id) [
+                  fixed($developer1, $bug_id) && 
+                  added_regression($developer2,$bug_id)
+                 ]
+                          -> true [ send_closed($bug_id,$developer1) ]
+ ),
+ FirstTop)
+\end{verbatim}    
+ 
+Этот пример описывает применение TermWare в системе организации 
+бизнес-процессов. Как вы уже догадались, описываемый пример - обработка
+сообщения об ошибке в ПО.
+
+ Здесь база фактов (внешняя среда) может дать ответы на вопросы:
+  \begin{itemize}
+    \item confirmed(x,y) - человек $x$ подтвердил сообщение о ошибке $y$
+    \item not\_confirmed(x,y) -  $x$ опроверг сообщение о $y$
+    \item fixed(x,y) -  $x$ исправил в программе ошибку $y$
+    \item added\_regression(x,y) - $x$ добавил тесты на $y$ в набор регрессионных тестов.
+  \end{itemize}
+
+ И воспринимать сообщения:
+   \begin{itemize}
+     \item $human\_task(x)$ - попросить какого-то человека выполнить $x$
+     \item $send_not_confirmed(x)$ - сообщить о неподтверждении ошибки $x$
+     \item $send_closed(x)$ - сообщить о исправлении ошибки $x$
+   \end{itemize}
+
+ Обратите внимание на передачу в систему данных из внешнего мира с помощью
+пропозициональных выражений в условиях.	Более подробно этот пример описан в
+\cite{ISTA2003-TermWare}
+
+\subsection{ Иерархическая система имен  }    
+
+ С точки зрения организации программирования терминальных систем удобно 
+использовать иерархический механизм именования, похожий на модули в idl,
+пространства имен в C++ или пакеты в Java.
+
+В TermWare такой механизмы организации предоставляется термом \verb|domain|.
+Синтаксис: $domain(name,def_1,\dots def_n)$, где $def_i$ - термы определения
+систем или поддоменов.
+
+Пример:
+\begin{verbatim}
+domain(algebra,
+  System(Semigroup),
+  domain(LiGroups,
+    System ..
+  )
+)
+\end{verbatim}
+
+ Также реализована автоматическая загрузка определений систем из файлов:
+при интерпретации встроенных преобразований в любом контексте, где встречается
+полное имя системы (например:\verb|x.y.z|, т. е. система с именем \verb|z|, находящейся в домене \verb|x/y|) автоматически
+загружается файл из соответствующего местоположения в файловой 
+системе относительно свойства Java окружения \verb|termware.path|.
+(в случае обращения к системе \verb|x.y.z| будет сделана попытка чтения файла
+ \verb|<termware.path>/x/y/z.def|).
+
+
+\subsection{ Встраиваемые парсеры других языков }
+
+ Синтаксис TermWare, как таковой, не всегда удобен для ввода данных:
+иногда нам хочеться использовать более естественный проблемно-ориентированный
+язык для ввода исходной информации.
+
+ C этой целью TermWare предоставляет возможность расширения - пользователи
+могут добавлять синтаксические анализаторы своих языков, реализуя в своих
+классах Java интерфейсы \verb|IParser| и \verb|IParserFactory| и регистрируя
+имена этих классов в общем словаре.
+
+\section{ Java API }
+
+\subsection{ Работа с термами }
+
+\subsubsection{Term}
+
+ Основная сущность  TermWare - \verb|ITerm|. 
+ \htmladdnormallink{(Описание API)}{\APIBase/Term.html}
+
+ Как видите, Term это класс в котором определены:
+ \begin{itemize}
+   \item Стандартные операции над термами, такие как арность или имя.
+   \item Логические операции, такие как унификация и эквивалентность.
+   Заметим, что у нас есть две унификации и две эквиваленитности:
+  free и bound. Их семантика описана в формальной модели, но повторим 
+  на словах - \verb|free| версии не отличают друг от друга свободные 
+  переменные с различными индексами.
+   \item Воспомогательные операции.
+   \item Детекторы атомарных термов и операции преобразования к 
+  элементарным типам данным: \verb|Int|,
+ \verb|String| и т. д.
+ \end{itemize}
+
+ В отличие от большинства систем компьютерной алгебры система термов тут
+построенна не ``снизу-вверх'', от атомарных типов данных, а ``сверху-вниз''
+ - термом может быть объявлен любой класс, наследующийся от \verb|ITerm|.
+
+Естественно, существует предопределенный набор типов термов (описанный в формальной модели). Соответствующая диаграмма наследования:
+\begin{verbatim}
+ ITerm
+  |
+  *---AbstractPrimitiveTerm
+  |     |
+  |     *--AtomTerm
+  |     |
+  |     *--BooleanTerm
+  |     |
+  |     *--DoubleTerm
+  |     |
+  |     *--IntTerm
+  |     |
+  |     *--NILTerm
+  |     |
+  |     *--StringTerm
+  |
+  *---AbstractComplexTerm
+  |   |
+  |   *--SetTerm
+  | 
+  *---XTerm
+  |
+  *---JTerm
+ 
+\end{verbatim}
+
+ Однако с точки зрения программиста прямое использование этих классов не необходимо: лучше для этой цели воспользоваться интерфейсом \verb|ITermFactory|.
+
+\subsubsection{TermFactory}
+
+TermFactory  - класс, предоставляющий методы для создания термов. 
+ \htmladdnormallink{(Описание API)}{\APIBase/TermFactory.html}
+
+ Примеры использования:
+\begin{verbatim}
+ Term term=TermWare.getInstance().getTermFactory().createAtom("qqq");
+\end{verbatim}
+ Создаст
+
+
+\begin{verbatim}
+ TermFactory termFactory = TermWare.getInstance().getTermFactory();
+ Term term=termFactory.createComplexTerm3("f_3",
+                                  termFactory.createInt(3),
+                                  termFactory.createComplexTerm2("f",
+                                            termFactory.createAtom("a1"),
+                                            termFactory.createAtom("a2")
+                                                                 ),
+                                  termFactory.createX(1)
+                                                     );
+\end{verbatim}
+ создаст нам терм $f_3(3,f(a1,a2),x_1)$ с одной свободной переменной $x_1$.
+
+\subsubsection{ITermTransformer}
+
+ Это просто преобразователь терма:
+ \htmladdnormallink{(Описание API)}{\APIBase/ITermTransformer.html}
+
+ Основная работа преобразователя спрятана в методе \verb|transform| - 
+ посмотрим на  определениe: мы имеем терм на 
+входе, терм на выходе и дополнительные параметры - систему, в которой
+ производятся преобразования и контекст трансофрмации, дающий доступ
+к текущей подстановке, флагу изменений и остальным служебным вешам.
+
+  
+ Как преобразователи термов связаны с правилами переписывания - очень просто:
+мы можем по правилу переписывания создать соответствующий преобразователь.
+
+
+\subsubsection{ITermRewritingStrategy}
+
+ Наконец, стратегия переписывания:
+ \htmladdnormallink{(Описание API)}{\APIBase/ITermRewritingStrategy.html}
+Это достаточно сложный объект, который
+содержит в себе набор правил (преобразователей термов) и алгоритм применения 
+этих правил.
+
+ Конечный пользователь, как правило, не работает прямо с переписывающими стратегиями, но 
+ прикладные программисты могут создавать свои стратегии переписывания,
+наследуя свой класс от  \verb|AbstractTermRewritingStrategy|.
+ \htmladdnormallink{(Описание API)}{\APIBase/ITermRewritingStrategy.html}
+
+ Само понятие стратегии заимствовано из APS \cite{APS1}, похожий подход принят
+в Stratego \cite{Stratego}.
+
+\subsubsection{IFacts}
+
+ IFacts 
+ \htmladdnormallink{(Описание API)}{\APIBase/IFacts.html}
+ - образ базы знананий терминальной системы, играющей роль внешней среды
+ (или оракула) в нашей логике.
+
+ Что мы можем сделать с фактом:
+ \begin{itemize}
+   \item - проверить (check).
+   \item - установить (set).
+ \end{itemize}
+ 
+ Естественно, семантика базы знаний полностью определяется предметной областью,
+ реализация создается отдельно для каждой задачи и может включать в себя 
+ запросы к реляционной БД либо к операторам ввода/вывода.
+
+ Правило вида $ x [ condition ] \to rule [ action ] $ интерпритируется
+  следующим образом:
+ \begin{itemize}
+  \item Производится сопоставление терма с образцом $x$.
+  \item При удачном сопоставлении вызывается метод БД фактов \verb|check| с аргументом $condition$
+  \item Если он возвращает \verb|false| - сопоставление считается неудачным, иначе:
+  \item Производится подстановка в выходной образец.
+  \item В БД фактов вызывается метод \verb|set|
+ \end{itemize}
+
+ Одна реализация, с именем \verb|default| определена непосредственно
+ в библиотеке \verb|TermWare| в классе \verb|DefaultFact|.
+
+ Там методы \verb|check| и \verb|set| определены следующим образом: 
+  они интерпритируют логические и арифметические выражения и, если встречают
+  функциональный символ, совпададающий с именем публичного метода своего класса,
+  то вызывают этот метод, при необходимости производя преобразование типов 
+  входных аргументов, с помощью Java Reflection API.
+
+ Т. е. для того, что бы можно было вызывать методы БД фактов непосредственно
+ из переписывающих правил, нужно просто унаследовать класс БД фактов от 
+ \verb|DefaultFacts| \htmladdnormallink{(Описание API)}{\APIBase/facts/DefaultFacts.html}
+ 
+
+\subsubsection{IEnv}
+
+ Кроме ``логической'' внешней среды, определенной в логике у нас еще есть
+ ``программная'' или ``физическая'' среда выполнения, которая определяет:
+ \begin{itemize}
+   \item откуда запрашивать ввод пользователя. 
+   \item куда выводить резудьтаты вычислений.
+   \item куда выводить сообщения об ошибках и отладочную информацию.
+ \end{itemize}
+
+ Эта среда инкапсулируестся в интерфейсе \verb|IEnv|
+ \htmladdnormallink{(Описание API)}{\APIBase/IEnv.html}
+
+
+\subsubsection{TermSystem}
+
+ Теперь мы можем сказать, что такое терминальная система: - это совокупность
+правил переписывания со стратегиями, базы данных фактов и интерфейса
+ програмного окружения.
+ \htmladdnormallink{(Описание API)}{\APIBase/TermSystem.html}
+
+ Зная все это мы можем определить и собственно операции преобразования
+ термов: \verb|reduce|.
+ 
+ Также определены методы добавления правил в систему, редуцирования термов
+и. т. д. со сравнительно простым интерфейсом (программистам,
+которые используют TermWare как библиотеку, следует начинать изучение API
+именно с этих методов).
+
+Типичный код для создания терминальной системы выглядит следующим образом:
+
+\begin{verbatim}
+   IEnv env =  new SystemLogEnv();
+
+   ITermRewritingStrategy strategy=new TopDownStrategy();
+
+   IFacts facts=new AttributeFacts();
+
+   ITermSystem system=new ITermSystem(strategy,facts,env);
+\end{verbatim}
+
+                                                             
+ 
+\subsection{ Воспомогательные классы }
+
+\subsubsection{TermWare}
+
+ TermWare - это просто синглетон для набора экзкмпляров.
+
+\subsubsection{TermWareInstance}
+
+ Экземпляр TermWareInstance 
+ \htmladdnormallink{(Описание API)}{\APIBase/TermWareInstance.html}
+ - это, образно говоря, стержень, который содержит в себе иерархическую
+ систему доменов (см. класс \verb|Domain|, 
+ \htmladdnormallink{(Описание API)}{\APIBase/Domain.html}, метод \verb|getDomain()|
+ ), пользовательские словари имен парсеров языков и принтеров.
+
+
+\subsubsection{ IParser, IParserFactory }
+
+ С помощью этих интерфейсов определяется подключение к системе TermWare 
+ пользовательских разборщиков языков.
+
+ Общий паттерн использования следующий:
+ \begin{itemize}
+   \item Прикладной программист определяет разборщик языка, соответствующий
+   интерфейсу \verb|IParser|
+ \htmladdnormallink{(Описание API)}{\APIBase/IParser.html}
+  и фабрику (IParserFactory).
+   \item Перед использованием разборщика этого языка программист регистрирует 
+  в \verb|TermWare| свою фабрику парсеров для языка \verb|X|, используя метод
+\begin{verbatim}
+  TermWareInstance.addParserFactory(String language, IParserFactory factory)
+\end{verbatim}
+   \item После этого вызов \verb|loadFile(fname,X)| будет использовать парсер
+ языка \verb|X|. 
+ \end{itemize}
+
+\subsubsection{ IPrinter, IPrinterFactory }
+
+ Интерфейсы, определяющие подключение собственного вывода термов. Все точно
+так-же, как и в предыдущей части, только вместо входного потока у нас выходной.
+Описание API:
+ \begin{itemize}
+  \item \htmladdnormallink{IPrinter}{\APIBase/IPrinter.html}
+  \item \htmladdnormallink{IPrinterFactory}{\APIBase/IPrinter.html}
+ \end{itemize}
+
+%\section{ Аналоги }
+
+%\section{ Приложения }
+
+\section{ Перечень изменений }
+
+ \begin{enumerate}
+  \item 28.06.2007 - добавлено описание порядка выполнения критических пар.
+  \item 28.03.2007 - добавлено описание внутреннего API. Приведен в соответствие
+ с версией 2.0.0
+  \item 08.10.2005 - приведен в соответствие с версией 2.0.RC0
+  \item 07.03.2004 - косметические правки.
+  \item 07.02.2004 - описана реализация БД фактов по умолчанию.
+  \item 12.01.2003 - первая внешняя редакция.
+  \item 06.11.2002 - первая внутренняя редакция.
+  \item 20.06.2001 - создан.
+ \end{enumerate}
+
+\bibliography{Bib} 
+
+\end{document}
+
+

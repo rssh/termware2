@@ -1,0 +1,30 @@
+
+
+
+domain(examples,
+
+  system(Life1,javaFacts(Life1DB,"ua.gradsoft.termwaredemos.life.Life1Facts"),
+         ruleset( 
+             # $T - set of pairs to test.
+
+
+
+        { l($i,$j) : $T} [ n($i,$j) == 3 ] -> $T [ putCell($i,$j) ] ,
+
+        { l($i,$j) : $T} [ n($i,$j) == 2 ] -> $T [ existsCell($i,$j) ? putCell($i,$j) : removeCell($i,$j) ],
+
+        { l($i,$j) : $T} [ n($i,$j) > 3 || n($i,$j) < 2 ] -> $T [ removeCell($i,$j) ] ,
+
+
+        { } -> $T [ [ showGeneration() , generateNextTestSet($T) ] ],
+
+        checkEmpty({$x:$Y}) -> { $x:$Y },
+
+        checkEmpty({}) -> END
+               
+                ),
+         FirstTop)
+        
+);
+
+       

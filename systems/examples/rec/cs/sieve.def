@@ -1,0 +1,88 @@
+
+domain(examples,
+ domain(rec,
+  domain(cs,
+    #@option(reduceInFacts(false))
+    #--@option(loggedEntity(All))
+    system(sieve,default, 
+     ruleset(
+       import(general,if),
+       import(general,logical_not),
+       import(general,reduce),
+
+       conv($x) -> lt($x,ten) ? digit($x)  
+                        : ap(conv(div($x,ten)),cons(digit(rem($x,ten)),NIL)),
+        
+       rem($x,$y) -> lt($x,$y) ? $x : rem(sub($x,$y),$y),
+
+       div($x,$y) -> lt($x,$y) ? z : s(div(sub($x,$y),$y)),
+
+       ten -> s(s(s(s(s(s(s(s(s(s(z)))))))))),
+
+       lt(z,s($x)) -> true,
+       lt($x,z) -> false,
+       lt(s($x),s($y)) -> lt($x,$y),
+
+       sub(z,$x) -> z,
+       sub($x,z) -> $x,
+       sub(s($x),s($y)) -> sub($x,$y),
+
+       digit($x) -> find(digitList,$x),
+       digitList -> [0,1,2,3,4,5,6,7,8,9],
+       find([$D:$L],z) -> $D,
+       find([$D:$L],s($x)) -> find($L,$x),
+
+       ap([$D:$L],$L2) -> cons($D,ap($L,$L2)),
+       ap(nil,$L) -> $L,
+       ap($D,$L) -> cons($D,$L),
+
+       add(z,$y) -> $y,
+       add(s($x),$y) -> s(add($x,$y)),
+
+       mult(z,$y) -> z,
+       mult(s($x),$y) -> add($y,mult($x,$y)),
+
+       fact(z) -> s(z),
+       fact(s($x)) -> mult(s($x),fact($x)),
+
+       divides($n,$m) -> d($n,$m,$m),
+       d(z,z,$m) -> true,
+       d(z,s($x),$m) -> false, 
+       d(s($x),s($y),$m) -> d($x,$y,$m),
+       d(s($x),z,$m) -> d(s($x),$m,$m),
+
+       # infinite list of Nats
+       ints_from($n) -> l($n,ints_from(s($n))),
+
+       sieve(l($n,$l)) -> l($n,sieve(filter($l,$n))),
+
+       filter(l($n,$l),$m) -> divides($n,$m) ? filter($l,$m) 
+                                             : l($n,filter($l,$m)),
+
+       force($L,z) -> NIL,
+       force(l($N,$L),s($M)) -> e($N,force($L,$M)),
+       #force($X,$Y) -> a(f1($Y,$X)),
+       #a(f1(s($Y),$X)) -> force($X,s($Y)),
+       #a(f1(z,$X)) -> NIL,
+
+       e($N,$L) -> conv($N)+$L,
+
+       ##
+       ## lets define tasks here:
+       ##
+       T1 -> force(sieve(ints_from(s(s(z)))), s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(z))))))))))))))))))))),
+
+       T12 -> force(sieve(ints_from(s(s(z)))), ten),
+
+       T2 -> force(sieve(ints_from(s(s(z)))), mult(ten, ten)),
+       
+       T3 -> force(sieve(intsr_from(s(s(z)))), mult(ten, mult(ten, ten))),
+
+       T4 -> conv(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(z))))))))))))))))))))),
+
+       P($X) -> $X [ println($X) ]
+
+     ),NFirstTops)
+  )
+ )
+);

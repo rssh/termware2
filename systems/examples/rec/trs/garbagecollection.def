@@ -1,0 +1,28 @@
+
+domain(examples,
+ domain(rec,
+  domain(trs,
+    #@option(reduceInFacts(false))
+    #--@option(loggedEntity(StrategyReductions))
+    system(garbagecollection,default, 
+     ruleset(
+
+  1 -> s(0),
+  c(0, $Y) -> $Y,
+  c(s($X), $Y) -> s(c($X,$Y)),
+  f($X, $Y, s($Z), $T, $U) -> f($X, $Y, $Z, c($T, $T), $U),
+  f($X, s($Y), 0, $T, $U) -> f($X, $Y, p, $T, $T),
+  f(s($X), 0, 0, $T, $U) -> f($X, n, p, 1, 0),
+  f(0, 0, 0, $T, $U) -> $T,
+
+  T1 -> f(s(s(s(s(s(s(0)))))), s(s(s(s(s(0))))), s(s(0)), 0, 1),
+
+  T2 -> f(s(s(s(s(0)))), s(s(s(0))), s(s(s(s(s(0))))), 0, 1)
+
+
+
+     ), BottomTop
+    )
+  )
+ )
+);

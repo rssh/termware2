@@ -1,0 +1,851 @@
+\documentclass[10pt]{article}
+\usepackage[OT2,T2A]{fontenc}
+\usepackage{html}
+
+
+\title{ TermWare: Semantics Description  \newline
+        \small{DocumentId:GradSof-TermWare-e-Sm-7.10.2002-5}
+      }
+
+
+\newcommand{\CmBase}{../..}
+\newcommand{\APIBase}{\CmBase/jdocs/ua/gradsoft/termware}
+\newcommand{\TAPIBase}{\CmBase/docs/TAPI/}
+
+
+\bibliographystyle{plain} 
+
+\begin{document}
+
+                                               
+\maketitle{}
+
+\tableofcontents
+
+\section{  Introduction }
+
+ Termware is computer algebra system designed for embedding into language processing
+ systems. The formal model, that underlies language semantics, is defined in the article. 
+ Also TermWare syntax and internal Java API structure are briefly described here. The 
+ article was meant to acquaint a reader both with object-oriented and functional 
+ programming and with mathematical logic fundamentals. But if you are --- a programmer, 
+ who wants to use TermWare in your own projects you can skip the reading of the article 
+ except of the first paragraph.
+
+\section{  Formal Model  }
+
+ The usual terminal algebra is built here, where the language objects are terms (expressions 
+ of $f_i(x_1\dots x_n)$ form, variable and elementary data types, the same as those of all 
+ functional programming languages). And its only difference from standard 
+ approach is that the ordered set constructor is the dedicated term and substitution 
+ operations retain order on those terms.
+
+        
+ The rest of the part will be devoted to wearing construction:
+
+\subsection{ Alphabet }
+\begin{enumerate}
+ \item Primitive types set  (note , it isn't many-sorted algebra ) 
+  
+            $\Sigma_{pt}= \{ CHAR, SHORT, INT, BigDecimal, BigInteger, BOOL, STRING, ATOM \}$
+ \item Typed constants set  $\Sigma_c^{pt} = \{ c_i^{pt} \}$, 
+ 
+ each constant is linked with the value on corresponding primitive type set, i.e.
+   $val:\Sigma_c^{pt} -> Dom^{pt}$, where  
+   \begin{itemize}
+     \item $Dom^{<Primitive Type>}$ - set of primitive types, represented by appropriative constants.
+     \item $Dom^{ATOM}$ - atomic interpreted values set.
+      Among atoms let's mark out \verb|NIL| atom , that plays a special role.    
+   \end{itemize}
+ \item Terminal symbols set  $\Sigma_t = \{ t_i \}$
+ \item Substitute symbols set  $\Sigma_x = \{ x_i \}$
+ \item Parenthesis '(' and  ')' and comma ','
+ \item Functional symbols set  $\Sigma_f = \{ f_i \}$
+\end{enumerate}
+
+
+\subsection{ Terms }
+
+Let's define concrete terms set $T_c$ :
+\begin{itemize}
+ \item $\forall c_i \in \Sigma_c$, $c_i \in T_c$
+ \item $\forall t \in \Sigma_t, \forall r \in T_c^{+} = \{T_1, \dots T_n\} $
+         $t(T_1,\dots T_n) \in T_c$ 
+\end{itemize}
+
+And  substitute terms set  $T_v$
+\begin{itemize}
+ \item $\forall t \in T_c \{ t \in T_v \}$
+ \item $\forall x \in \Sigma_x$, $x \in T_v$
+ \item $\forall t \in \Sigma_t, r \in T_v^{+} = \{T_1,\dots T_n\} $
+         $t(T_1,\dots T_n) \in T_v$
+\end{itemize}
+
+ Term, which belongs to $T_v / T_c$ we will call term with free variables. For each term $T$ 
+the set of substitute symbols, that form the term, will call the set of free variables of the term and 
+will mark as $v(T)$. 
+
+\subsection{ Operations }
+Let's define next model functions of our term system: 
+ \begin{itemize}
+  \item $typename0: T_v \to INT$ which map different types to different integers.
+  \item $name: T_v \to STRING$
+  \begin{itemize}
+    \item $name(c_i)=STRING(c_i)$
+    \item $name(x_i)=STRING(x_i)$
+    \item $name(t_i(1_1,\dots r_n))=STRING(t_i)$
+  \end{itemize}
+  \item $arity: T_v \to INT$
+  \begin{itemize}
+    \item $arity(c_i)=0$
+    \item $arity(x_i)=0$
+    \item $arity(t(x_1,\dots x_n))=n$
+  \end{itemize}
+  \item $subterm: T_v \times \{INT\} \to T_v$
+  \begin{itemize}
+    \item $\forall j\in \{INT\}: subterm(c_i,j)=NIL$
+    \item $\forall j\in \{INT\}: subterm(x_i,j)=NIL$
+    \item $\forall t\in T_v, j\in \{INT\}: j<1 \to subterm(t,j)=NIL$
+    \item $$\forall t in T_v, j\in \{INT\}: 0<j<arity(t) \to subterm(t(t_1,\dots,t_n),j)=t_j$$  if suppose that there is $t_j$ subterm on  $j$-th position .
+    \item $\forall t\in T_v, j\in \{INT\}: j>=arity(t) \to subterm(t,j)=NIL$
+  \end{itemize}
+  \item $equal T_v\times T_v \to BOOL$ ( For $equal(x,y)$  we assign 
+           shortening   $x==y$ 
+  \begin{itemize}
+    \item $c_i == c_j$, if $c_i$ and $c_j$ represent the same model  object.
+    \item $x_i == x_j$, always.
+    \item $t_1(r_1,\dots,r_n) == t_2(q_1,\dots q_k)$, if $t_1$ and  $t_2$ the same
+     terminal symbol, $r==n$ \& $\forall i \in {1\dots n} r_i == q_i$
+  \end{itemize}
+  \item $less: T_v\times T_v \to BOOL$ 
+      (For  $less(x,y)$ we assign shortening  $x<<y$)
+  \begin{itemize}
+    \item $\forall x !=NIL, NIL << x $
+    \item $\forall c_i, c_j , typename(c_i)==typename(c_j) \to c_i < c_j \Leftrightarrow c_i << c_j  $, where  $<$ is natural model area  regulation.
+    \item $\forall t_1,t_2: typename0(t_1)='atom', typename0(t_2) != 'atom' t_1 << t_2$
+    \item $\forall t_1,t_2: typename0(t_1)='string', typename0(t_2) != 'atom' \land typename0(t_2) != 'string' : t_1 << t_2$
+    \item $\forall t_1,t_2: typename0(t_1)='boolean', typename0(t_2) != 'atom' \land typename0(t_2) != 'string' \land typename(0,t_2)!='boolean': t_1 << t_2$
+    \item $\forall t_1,t_2: typename0(t_1)='int', typename0(t_2) != 'atom' \land typename0(t_2) != 'string' \land typename0(t_2)!='boolean' \land typename0(t_2)!='int': t_1 << t_2$
+    \item $\forall t_1,t_2 \in T_v: arity(t_1) < arity(t_2) \to t_1 < t_2$
+    \item $\forall t_1(t_11,\dots,t_1n),t_2(t_21,\dots,t_2n) \in T_v, t_1.getName() < t2.getName() \to t1 << t2$
+    \item $\forall t_1(t_11,\dots,t_1n),t_2(t_21,\dots,t_2n), T_v, t_1.getName() = t2.getName() : t_11 << t_21 \to t1 << t2$
+    \item $\forall t_1(t_11,\dots,t_1n),t_2(t_21,\dots,t_2n), T_v, t_1.getName() = t2.getName() \land t_11 = t_21 : t_1(t_12 \dots t_1n) << t_2(t_22 \dots t_2n) \to t1 << t2$
+    \item $\forall t_1,t_2: t_1==t_2 \Leftrightarrow \not(t_1 <<t2) \land \not(t_2<<t_1))$
+  \end{itemize}
+    i. e. term set is just partly regulated. Which allows to designate the ordered set constructor.
+    \item  $set_n(t_1,\dots,t_n)$ is the term, that signify ordered set of  $n$ elements. 
+    $$s=set_n(t_1,\dots,t_n): \forall 0i<j<n \; s.subterm(i)<<s.subterm(j)$$
+  \item Now we can define  $fv(T_v)\to T_v$  - the free variables ($t$) set.
+    \begin{itemize}
+      \item $fv(c_i)=NIL$
+      \item $fv(x_i)=set_1(x_i)$
+      \item $fv(f(t_1,\dots,t_n))=set(x_i)\cup freeset(f(t_2,\dots,t_n))$
+    \end{itemize}
+    And $fvi(x)$ is term indexes set .
+ \item Each subterm of term is uniquely identified  by numeral sequence  - path from term head.
+   I. e. there exists  $subterm^*:T_v\times INT^* \to T_v$
+   \begin{itemize}
+     \item $subterm^*(x_i,k)=NIL$
+     \item $subterm^*(c_i,k)=NIL$
+     \item $$subterm^*(t(t_{1}\dots t_{n}),K)=\left\{\begin{array}{l l}
+             NIL  &  length(K)=0 \\
+             NIL  &  K[0] > n \\
+             t_{k[0]}  &  K[0] < n \land length(K)=1\\
+             subterm^*(t_{k[0]},K/K[0]) & K[0]<n \land length(K)>1 \\
+            \end{array}\right.$$
+   \end{itemize}
+ \item As usual, free variables substitution is the set of pairs $(x_i,t_i)$, which will be denoted as  
+     $substitution([x_1,t_1]\dots [x_n,t_n]) \in S$ . If it doesn't cause ambiguity it will be also denoted as 
+  $s([x_1,t_1]\dots [x_n,t_n])$ or just as $s[x_i,t_i]$
+ \item The substitution process $subst(t,s)$  itself is defined as follows:
+  \begin{itemize} 
+    \item $$
+  subst(t,s([x_1,t_1]\dots [x_n,t_n]))=
+             subst(t,\dots(subst(t,s[x_1,t_1])\dots,s[x_n/t_n])
+    $$
+    \item $subst(NIL,s)=NIL$
+    \item $subst(c_i,s)=c_i$
+    \item $$subst(x_i,s[x_j,t_j])=\left\{\begin{array}{l l}
+         t_j & i = j \\
+         x_i & i \neq j \\
+        \end{array}\right.$$
+    \item $subst(t(t_1\dots t_n),[x_i,t_k])=t(subst(t_1,[x_i,t_k])\dots subst(t_n,[x_i,t_k]))$
+  \end{itemize} 
+ \item  We define coherent unification as $bound\_unify : T_v, \times T_v \times S \to T_v \times S $ - by existing substitution and two terms we obtain unificator and adjusted substitution . 
+   \begin{itemize} 
+     \item $bound\_unify(NIL,x,S) = NIL $
+     \item $bound\_unify(x,NIL,S) = NIL $
+     \item $$bound\_unify(c_i,c_j,S) = \left\{\begin{array}{l l}
+        NIL,S & c_j != c_j \\
+        c_i,S & c_i = c_j \\
+      \end{array}\right.$$ 
+     \item $bound\_unify(x_i,t,S) = t, S\land[x_i,t]$
+     \item $bound\_unify(t,x_i,S) = t, S\land[x_i,t]$
+     \item $bound\_unify(x_i,x_j,S) = x_i, S\land[x_i,x_j] $
+     \item $$bound\_unify(t_1(t_{11}\dots t_{1n}),t_2(t_{21}\dots t_{2m}),S) = $$
+         $$=
+         \left\{\begin{array}{l l}\\
+           NIL,S & n!=m \\
+           NIL,S & name(t_1) != name(t_2) \\
+           t_1(bound\_unify(t_{11},t_{21},S)\dots bound\_unify(t_{1n},t_{2n},S)),\land S \\
+         \end{array}\right.$$
+   \end{itemize} 
+ \item  And incoherent unification  as $free\_unify : T_v, \times T_v \to T_v \times S $ - 
+  by two terms we obtain unificator and adjusted substitution , presuming that terms are 
+  not bound by common variable set , i. е.
+  \begin{itemize}
+    \item $free\_unify(t_1,t_2)=bound\_unify(t_1,free\_fv(t_2,fv(t_1)))$
+    \item $free\_fv(c_i,(x_1\dots x_n))=c_i$ 
+    \item $free\_fv(x_i,(x_1\dots x_n))=\left\{\begin{array}{l l}
+                x_i & i>n \\ 
+                x_k, x_k\not\in fv(t_1) \land x_k\not\in fv(t_2) & \\
+           \end{array}
+           \right.$
+  \end{itemize}
+    
+ \end{itemize}
+ 
+
+ Rewriting rule is the three: $(X,  t_{in},t_{out})$ where:
+ \begin{itemize}
+  \item $X = {x_i}$ is the free variables set.
+  \item $t_{in} \in T_v$  input term, such as  $fv(t_{in})=X$
+  \item $t_{out} \in T_v$  output term, such as $fv(t_{out})\in X$
+ \end{itemize}
+
+
+
+  Rewriting operation semantics is defined by following expression:
+   $$ apply(t, t_{in}, t_{out}) = subst(t_{out},free\_unify(t_{in},t))$$
+
+ Let's extend rewriting operations for rules set:
+  $$                                    
+   apply(t,\{r_1\dots r_n\})=\{ apply(t,r_1) \dots apply(t,r_n)\} 
+  $$
+
+  and for free terms set \footnote{ free terms set is term set defined to sentential 
+  symbols renaming }:
+  
+  $$                                    
+   apply(\{t_1\dots t_n\}, R)=\cup apply(t_i,R)
+  $$
+
+ Evidently, the rule can be represented as term:
+    $rule(vars,t_{in},t_{out})$ where:
+   \begin{itemize}
+     \item $vars$ - variables set , term of  $set(x_1,\dots x_n)$ form
+     \item $t_{in}$ and  $t_{out}$ are input and output terms accordingly.
+   \end{itemize}
+
+
+  We will say that term set  $x$ can be rewritten into term set $y$, if there exists a chain    
+   $z_1\dots z_n$ such as 
+  $$z_1 = x \land z_n=y \land \forall i \in \{1\dots n\} z_{n+1}\in apply(z_n,R)$$
+
+
+  At last , will say that term set $T$ converges relatively to set of rules $R$ 
+  if there exists  fixed point of equation:
+
+  \begin{itemize}
+   \item $apply^*(T,R) = X:  X = apply(X,R)$
+  \end{itemize}                                     
+
+  The set of rules $R$ is called converging relatively to finite set of terms $T$, if  $apply^*(T,R)$ is finite.
+
+  Rule set  has the noetherian property, if 
+$$\forall t\in T; r_1,r_2 \in R apply(t,r_1)!=apply(t,r_2) \exists R^* \in R :
+    apply(apply(t,r_1),R^*)=apply(apply(t,r_2),R^*) \land apply(t_1,R^*) is finite $$ 
+
+  Thus we come to wide-known rewriting rules theory ,
+with some differences from canonical statements:
+  \begin{itemize}
+    \item we operate sets not just single terms  - it makes statements more general    
+     (for instance  $apply^*(X,R)$ exists always ) but with that disadvantage that the main definition is not constructive 
+    \item reflexive definitions of this calculus are directly embedded into the calculus.
+    \item Operations of ordered set are directly included into term calculus, and are not emulated
+by the set of normalizing rules as usually.
+  \end{itemize}
+
+  Those differences don't add anything essentially new to mathematical properties of 
+  algebra except that it's more convenient to work with it, from technical point of view .
+
+\subsection{ Ordered rulesets }
+
+ We would extend semantics of ruleset evaluation on non-confluent rule systems, by applying order of rule evaluations in critical pairs.
+I. e. rules $p$, $s$ forms critical pair, if exis such term $t$, than:
+ $apply(p,t)\neq apply(s,t)$.  Newman's lemna say, that if system is locally-confluent (i.e. for each criticat pair exists common reduct for $apply(p,t)$ and $apply(s,t)$ than system is confluent.  But many practically interested systens better described in terms of locally-incoherent rules with fixed order of evaluation.
+
+ So, let's introduce partial ordering of rewriting rules by 'concretization' of input patterns.  I.e. we will say that $t1 {\le}_{c} t2$ when $t1$ is 'more concrete' than $t2$.  And what is more concrete ? - this means that $t1$ can be represented as partial case of $t2$, i.e. exists substitution of free variables $s$: $subst(t2,s) \equiv t1$. Equivalent definition: $\forall t: free\_unify(t,t1) \Rightarrow free\_unify(t,t2)$.
+
+  Now, let $p=(in_{p} \to out_{p})$ and $s=(in_{s} \to out_{s})$ are two rules, which form critical pair. we see that $p \le_{c} s$ if $in_{p} {\le}_{c} in_{s}$, and let's fix the order as evaluation as: more concrete term evaluated first, i. e.  
+$$
+ apply(\{p,s\},t)=\left\{
+  \begin{array}{l l}
+    apply(p,t) & p \le_{c} s \\
+    apply(s,t) & s \le_{c} p \\
+    \iota\{apply(p,t),apply(s,t)\} & p \sim_{c} s\\
+  \end{array}
+ \right.
+$$
+ where $\iota$ is operator of non-determenistics choice, defined by strategy.
+
+It's easy to show, that for each ruleset ${r_{1}\dots r_{n}}$ where $\forall i,j : i\neq j \Rightarrow \not {r_i} \sim_{c} r_j$ can be build equivalent locally-confluent ruleset.
+
+\subsection{Actions}
+
+ Next question, that should be considered is the term calculation representing. 
+ Usual approach  (set of rules, that convert input term set to output) 
+ doesn't suit us, becouse in real world we need something more:
+ \begin{itemize}
+   \item In  applied problems, unlike mathematical vacuum, there is some environment, 
+   where we can obtain necessary information as required, as well as report to. 
+   \item Often we don't need conversion from input to output in software packages, but we need
+  description of  exchange with environment sequence.
+   \item The conversion rules set can be dynamic.
+ \end{itemize}
+
+ Among the samples of such applications there are set of rules for determination of 
+ the following actions in a business process, where set depends on process variables, 
+ or the code generation process, that depends on certain architecture, 
+ or  the output rules, presented by facts of the deductive database.                                                                
+
+Consequently, we need to define operations semantics  by including openly environment 
+ interaction and rules set modification dependent on state.
+
+
+Terminal mechanism is the four:  
+  $<S, E, \phi_s,\phi_e>$                                                             
+ where:
+ \begin{itemize}
+   \item $S=<S_t,S_r>$ is state, the pair of 
+   \begin{itemize}
+     \item $S_t$ - term set.
+     \item $S_r$ - active rewriting rules set .
+   \end{itemize}
+     Note, that the division is quite relative, for rewriting  rules are presented by terms of special kind.
+    \item $E$  is environment representing in the system.        
+    \item $\phi_s:S\times X \times E \to S\times Y$ is the system transformation function.
+    \item $\phi_e: E \times Y -> E$ is the environment reaction function.
+ \end{itemize}                                     
+
+ The terminal mechanism behavior is defined by the following transformation in discrete time unit:
+
+ $$<S,E,X> -> <\phi_s(X,E,S)|_{S},\phi_e(\phi_s(X,E,S)|_{Y})$$
+
+(here  $x|_{Y}$ denotes projection  $x$ onto coordinate $Y$ in general sense  of  set theory).
+
+The following diagram can be more clear.
+
+\begin{verbatim}
+          phi_s
+ <S,E,X> ----------> <S',Y'>   phi_e
+    |                       ----------> E'
+    ---------------------E
+\end{verbatim}
+ 
+                     
+\begin{itemize}
+ \item $\phi_s$ is operation of applying  $S_r$ to $S_f$ according to some strategy, 
+       influencing   environment  $Y$ as by-effect  (from the programming point of 
+       view it will be output operation).
+     The system is normal if $\phi_s$ defines fixed  point of application $S_r$ to $S_f$
+ \item $\phi_e$ is the interpretation of  $env(y)$ by environment. 
+\end{itemize}
+              
+\subsection{ Terminal System With Interactions }
+
+What changes we should make in the term rewriting system to reflect operation 
+semantics requirements  - we should just add some syntax  of environment interaction: 
+
+Input/output pair ($X:x\to y$) is replaced by the four  ($X:(x,e_{in})\to (y,e_{out})$,
+where
+ \begin{itemize}
+  \item $x$, $y$ are input and output terms as before.
+  \item $e_{in}$ is environment state request.
+  \item $e_{out}$ is environment influence operation.
+ \end{itemize}
+  
+We will denote the four as  $x [ e_{in} ] ->  y [ e_{out} ]$.
+  Expression $x[ e_{in} ]$ for term $t$ can be interpreted as comparison with 
+sample $x$ while executing  $subst(e_{in},snd(free\_unify(t,x)))$ 
+(let $snd(free\_unify(t,x)) = s$), 
+$y[e_{out}]$ - as substitution of unification into $y$ and $subst(e_out,s)$ execution.
+   
+
+
+\section{ TermWare Language }
+
+
+Lexical Units:
+\begin{itemize}
+ \item Constants are numbers and strings with usual semantics 
+ \item Variables - \verb|$x|
+ \item Identifiers. -
+ \item Terms constructors: $f(x_0\dots x_n)$
+ \item Set-Patterns are terms of  $set\_pattern(x,y)$ form, symbols - $\{ x: y \}$, unifying
+with set, that consist of  unificator $х$ and of set $y$ 
+\end{itemize}
+              
+Syntax:                                              
+\begin{itemize}
+ \item Just term algebra.
+ \item Operators and shortenings.       
+ \begin{itemize}
+   \item $x \to y$ is shortening for $rule(x,y)$
+   \item $x [c] \to y$ is shortening for $if_rule(x,c,y)$
+   \item $x [c] \to y [r]$ is shortening for $if_rule(x,c,action(y,z))$
+   \item $x.y$ is shortening for $apply(x,y)$
+   \item $[x,y,\dots z]$ is shortening  for $cons(x,cons(y,\dots,z)\dots)$
+   \item $\{x,y,\dots z\}$ is shortening for $set(x,y,\dots z)$
+   \item Arithmetic expressions with standard priority rules (if more precisely - corresponding to C language syntax).
+ \end{itemize}
+\end{itemize}
+
+ See also 
+ \htmladdnormallink{BNF definitions}{\CmBase/docs/TermWareBNF.html}
+
+
+\begin{itemize}
+ \item Predefined systems:
+  \begin{itemize} 
+   \item Gen contains "natural" (from common sense point of view) rules for general  
+    algebraic operations.
+   \begin{itemize}
+     \item plus
+     \item minus
+     \item apply(system-name, term);
+   \end{itemize}
+   \item Sys contains Java environment interaction primitives.
+   \begin{itemize}              
+     \item $javaFacts(name,className);$
+     \item $setFact(name,t_1,...t_n);$
+     \item $checkFact(domain,X);$
+     %\item askFact(domain,x);
+     \item $javaStrategy(name, className);$
+     \item $system(name, facts, ruleset, strategy);$
+     \begin{itemize}
+       \item name is string or atom, which means system name
+       \item facts is the name of database facts
+       \item ruleset is term, that denotes rules set .
+             it should be of  $ruleset(t_1,\dots,t_n)$ form, where 
+             $t_i$ is 
+             \begin{enumerate}
+               \item or rule  $cond\_rule(x,y,z,v)$, $rule(x,y)$ is the shortening for $cond\_rule(x,NIL,y,NIL)$
+               \item or term of  $import(x)$ form, meaning "import all the rules from system  with name x"
+               \item or term of $importTransformed(x,y)$ form, meaning "import all the rules from system with name x, with transformation, defined by Y"
+               \item or term of  $javaRule(className)$ form.
+             \end{enumerate}
+      \item strategy is the strategy name.
+     \end{itemize}    
+     \item $javaParser(javaClass);$
+     \item $loadFile(fname);$
+     \item $loadFile(parser,fname);$
+     \item $setProperty(name,term);$
+     \item $getProperty(name);$
+     \item $forgetSystem(name);$
+   \end{itemize}
+  \end{itemize}
+  \item Default is Gen and Sys combination.  
+\end{itemize}
+
+Full description of build-in systems see in
+ \htmladdnormallink{TermWareAPI reference}{\TAPIBase/index.html}
+
+
+Samples of systems, defined by  TermWare Language:
+                    
+\begin{verbatim}
+
+System(BooleanAlgebra,default,
+ruleset(
+ $x & ($x => z) -> $z ,
+ not($x & $y) -> not($x) | not($y) ,
+ not($x | $y) -> not($x) & not($y) ,
+ $x & ($y | $z) -> ($x & $y) | ($x & $z) ,
+ not(not($x)) -> $x , 
+), 
+FirstTop);
+
+System(BooleanLogic,general,
+ ruleset( import(BooleanAlgebra),
+          true => $x -> $x,
+          false => $x -> not($x),
+          true | $x -> true,
+          false | $x -> $x,
+          true & $x -> $x,
+          false & $x -> false,
+          not(true) -> false,
+          not(false) -> true
+        ), FirstTop);
+
+ 
+\end{verbatim}   
+
+Here, as you can see all rules are shortened (without operations and data base).
+
+The full system model with operations and fact base demands facts semantics 
+and operations description  (or rather their programming in Java)  and will 
+be of enormous volume for this article.
+
+Therefore below we'll cite terminal system "of real life"
+\footnote{ somewhat simplified }, 
+ and facts semantics and operations we'll describe informally :
+
+\begin{verbatim}
+System(BugFixing,DevelopmentProcess,
+ ruleset(
+
+ received($bug_id) -> check_confirmation($bug_id) 
+                                 // human_task(check_bug($bug_id)),
+
+ check_confirmation($bug_id) [|confirmed($tester,$bug_id)|]
+                          -> known($bug_id)
+                                 // human_task(fix_bug($bug_id),
+                                               write_regression($bug_id)
+                                              ),
+
+ check_confirmation($bug_id) [|not_confirmed($tester,$bug_id)|]
+                          -> true // send_not_confirmed($bug_id,$tester),
+
+
+ known($bug_id) [|
+                  fixed($developer1, $bug_id) && 
+                  added_regression($developer2,$bug_id)
+                 |]
+                          -> true // send_closed($bug_id,$developer1)
+ ),
+ FirstTop)
+\end{verbatim}    
+ 
+This example describes TermWare application in business-processes organization
+system. As you've guessed the example is software error message processing. 
+
+ Here fact base (environment) can answer the questions:
+  \begin{itemize}
+    \item confirmed(x,y) - $x$ person confirmed $y$ error message
+    \item not\_confirmed(x,y) -  $x$ denied $y$ message
+    \item fixed(x,y) -  $x$ repaired software $y$ error
+    \item added\_regression(x,y) - $x$ added tests for $y$ into regression tests set.
+  \end{itemize}
+
+ And can interpret messages:
+   \begin{itemize}
+     \item $human\_task(x)$ - ask somebody to perform $x$
+     \item $send\_not\_confirmed(x)$ - report about denied error $x$
+     \item $send\_closed(x)$ - report about repaired error $x$
+   \end{itemize}
+
+ Notice, that environment data are transmitted to the system by 
+ sentential expressions in conditions.  More detailed this primer is described
+ in \cite{ISTA2003-TermWare}.
+
+ 
+
+\subsection{ Hierarchical Name System  }    
+
+From terminal systems programming point of view it is convenient to use Hierarchical
+Name Mechanism resembling to idl modules, C++ namespaces or Java packages.
+
+In TermWare such mechanism is represented by \verb|domain| term. 
+Syntax: $domain(name,def_1,\dots def_n)$, where  $def_i$  is systems or 
+subdomains definition terms.
+
+Example:
+\begin{verbatim}
+domain(algebra,
+  System(Semigroup),
+  domain(LiGroups,
+    System ..
+  )
+)
+\end{verbatim}
+
+Also automatic system definitions loading from files is implemented:  
+while interpreting embedded conversions in any context, if full system 
+name (for instance:\verb|x.y.z|, i.e. system with \verb|z| name, which is 
+located in \verb|x/y| domain) is found, then the file is automatically 
+loaded from according location of file system relative to 
+\verb|termware.path| - Java environment property (in case of addressing 
+to \verb|x.y.z| system an attempt to read \verb|<termware.path>/x/y/z.def|
+file will be performed). 
+
+
+\subsection{ Embedded  Parsers Of Other Languages }  
+
+TermWare  syntax, as it is, is not always convenient for data input:
+sometimes we'd like to use more natural problem-oriented language for the purpose.
+
+Toward this aim TermWare provides extension possibility:
+users can embed syntax parsers of their own languages by  implementing verb|IParser| 
+and \verb|IParserFactory|  interfaces in their Java classes and by registering 
+the classes names in general dictionary.
+                                   
+\section{ Java API }
+
+\subsection{ Terms Operating }
+
+\subsubsection{Term}
+
+Main TermWare entity is \verb|Term| interface.
+
+ \htmladdnormallink{(API Description)}{\APIBase/Term.html}
+
+
+
+As you can see, ITerm is interface where the following elements are defined: 
+ \begin{itemize}
+   \item Standard term operations, such as arity or name.
+   \item Logical operations, such as  unification and equivalence.
+   Notice, that we have two unifications and two equivalences:
+  free and bound. Their semantics is described in Formal Model, but let's  repeat it 
+  in few words - \verb|free| versions don't  discern free variables with different indexes. 
+   \item Subsidiary operations. 
+   \item Atomic terms detectors and operations of conversion to elementary 
+            data types:
+           \verb|Int|,
+            \verb|String| and  etc. 
+ \end{itemize}
+
+ Unlike many computer algebra systems, term system is not build bottom-up, from 
+ atomic data types, but top-down, i.e. any class, that extends abstract class \verb|Term|,
+ can be declared as term.
+
+Of course, there exists predetermined term types set (described in Formal Model).
+According inheritance diagram looks as follows:
+\begin{verbatim}
+ Term
+  |
+  *---AbstractPrimitiveTerm
+  |     |
+  |     *--AtomTerm
+  |     |
+  |     *--BooleanTerm
+  |     |
+  |     *--DoubleTerm
+  |     |
+  |     *--IntTerm
+  |     |
+  |     *--NILTerm
+  |     |
+  |     *--StringTerm
+  |
+  *---AbstractComplexTerm
+  |   |
+  |   *--SetTerm
+  | 
+  *---XTerm
+ 
+\end{verbatim}
+
+But from programmer's point of view it's not necessary to use these  classes:  
+it would be better for this purpose to use \verb|TermFactory| interface.
+
+\subsubsection{TermFactory}
+
+TermFactory  is a class, accessible from TermWare singleton,
+ that provides methods to create terms. 
+ \htmladdnormallink{(API Description)}{\APIBase/TermFactory.html}
+
+ Usage examples:
+\begin{verbatim}
+ Term term=TermWare.getInstance().getTermFactory().createAtom("qqq");
+\end{verbatim}
+ Создаст
+
+
+\begin{verbatim}
+ TermFactory termFactory=TermWare.getInstance().getTermFactory();
+ Term term=termFactory.createComplexTerm3("f_3",
+                                  termFactory.createInt(3),
+                                  termFactory.createComplexTerm2("f",
+                                            termFactory.createAtom("a1"),
+                                            termFactory.createAtom("a2")
+                                                                 ),
+                                  termFactory.createX(1)
+                                                     );
+\end{verbatim}
+will create term $f_3(3,f(a1,a2),x_1)$ with one free variable $x_1$.
+ 
+
+\subsubsection{ITermTransformer}
+
+ It is just term converter:
+ \htmladdnormallink{(API Description)}{\APIBase/ITermTransformer.html}
+
+ Main converter functioning is concealed in \verb|transform| method, which
+transform input term to output in some system and with transformation context
+(which give us access to current substitution and so on).
+  
+Let's consider how term converters are bound with rewriting rules:
+we can create according converter just by rewriting rule. 
+
+
+\subsubsection{ITermRewritingStrategy}
+
+And at last rewriting strategy:
+ \htmladdnormallink{(API Description)}{\APIBase/ITermRewritingStrategy.html}
+It's rather difficult object, which includes rules (term converters) set and 
+the rules application algorithm. 
+
+
+End user usually doesn't work directly with rewriting strategys, but application 
+programmers can create their own rewriting strategy by inheriting their 
+class  from \verb|AbstractTermRewritingStrategy|.
+ \htmladdnormallink{(API Description)}{\APIBase/ITermRewritingStrategy.html}
+
+This minding of strategy come from APS \cite{APS1}, another approach can be found
+in Stratego \cite{Stratego}.
+
+\subsubsection{IFacts}
+                        
+ IFacts 
+ \htmladdnormallink{(API Description)}{\APIBase/IFacts.html}
+ is terminal system knowledgebase pattern, that figures environment (or oracle)
+ of our logic.
+
+ What we can do with fact:
+ \begin{itemize}
+   \item - check.
+   \item - set.
+   \item - ask something uncertain (ask).
+ \end{itemize}
+ 
+ Naturally, knowledge base semantics is utterly defined by data domain,
+ implementation should be created separately each for a problem and may include
+ requests to relation database or to input/output operators. 
+
+
+ Rule $x[condition]->y[action]$ is applyed to term $t$ as follow:
+ \begin{enumerate}
+  \item $t$ is matched with pattern $x$.
+  \item On success of previous step, we call $check$ method of facts db with
+    argument \verb|condition|.
+  \item If \verb|set| return false, we belive that rule is not applicable.
+  \item otherwise, we substitute output pattern $y$ as result 
+  \item and call method \verb|set| of db facts with $action$ as argument.
+ \end{enumerate}                           
+
+
+ TermWare provide implementation of Facts DB with name \verb|default| in class
+\verb|DefaultClass|  \htmladdnormallink{(API Description)}{\APIBase/DefaultFacts.html}
+
+ In this class \verb|check| and \verb|set| methods implemented as follow:
+ Logical and ariphmetical expressions are evaluated, if during evaluation we
+ meet functional symbol, with name and arity wich matched name and arity of
+ some method of own class, than this method is called. Argument and result
+ are converted to Java types, if needed, using Java reflection API.
+
+ I. e. for calling methods of you facts database from rules just derive
+ you facts database from class \verb|DefaultFacts|.
+
+                                             
+\subsubsection{IEnv}
+
+Except 'logical' environment, defined in the logic, we have also 'program' or 
+'physical' environment, that defines: 
+ \begin{itemize}
+   \item where request user input from. 
+   \item where output calculations results to.
+   \item where output error messages and debug information to.
+ \end{itemize}
+
+ The environment is encapsulated in \verb|IEnv| interface
+ \htmladdnormallink{(API Description)}{\APIBase/IEnv.html}
+
+\subsubsection{TermSystem}
+
+Now we can define Terminal  System, so: 
+Terminal System is rewriting rules with strategies and fact data base and 
+program environment interface totality.
+ \htmladdnormallink{(API Description)}{\APIBase/TermSystem.html}
+
+ Knowing all this we can define the term conversion operations: \verb|reduce|.
+ 
+Also we can define methods of rules adding to system, of term reduction and so on. 
+These methods have comparatively simple interface (programmers, who use TermWare
+as library should start API studying exactly from these methods).  
+
+Typical code of terminal system creating looks as follows:
+
+\begin{verbatim}
+   IEnv env=TermWare.getInstance().createEnv(
+             "ua.kiev.gradsoft.TermWare.envs.SystemLogEnv", envTerm
+                                  );
+
+   ITermRewritingStrategy strategy=TermWare.getInstance().createJavaStrategy(
+             "ua.kiev.gradsoft.TermWare.strategies.TopDownStrategy"
+                                                                  );
+   IFacts facts=TermWare.getInstance().createFacts(
+             "ua.kiev.gradsoft.TermWare.facts.AttributeFacts", env
+                                            );
+   ITermSystem system=new TermSystem(strategy,facts,env);
+\end{verbatim}
+
+
+\subsection{ Subsidiary Classes }
+
+\subsubsection{TermwareInstance}
+
+ TermWareInstance
+ \htmladdnormallink{(API Description)}{\APIBase/TermWareInstance.html}
+ is , figuratively, a shank, that contains hierarchical domain system
+ (see \verb|Domain| class, 
+ \htmladdnormallink{(API Description)}{\APIBase/Domain.html}, \verb|getDomain()|
+method), user dictionaries  of  language parsers  names  and  printers  names.
+
+ Usially we have one instance in JVM, but it is possible to create and use few
+instances when we need few unrelated theories in one JVM (for example inside application server).
+
+
+\subsubsection{ IParser, IParserFactory }
+
+You can define user language parsers embedding into TermWare system   
+with the  help of these interfaces. 
+
+ General usage pattern looks as follows:
+ \begin{itemize}
+   \item Application programmer defines language parser according to 
+   \verb|IParser| interface
+ \htmladdnormallink{(API Description)}{\APIBase/IParser.html}
+     (IParserFactory).
+   \item Before using the parser programmer registers his parser factory in 
+   \verb|TermWare| for language \verb|X| by using 
+\begin{verbatim}
+  TermWareInstance.addParserFactory(String language, IParserFactory factory)
+\end{verbatim}
+method. 
+After that verb|loadFile(fname,X)| call will use \verb|X| language parser.   
+ \end{itemize}
+
+
+\subsubsection{ IPrinter, IPrinterFactory }
+
+These interfaces define embedding of term own output. The actions should be the same 
+as in previous part, except instead of input stream we use output stream.
+API Description:
+ \begin{itemize}
+  \item \htmladdnormallink{IPrinter}{\APIBase/IPrinter.html}
+  \item \htmladdnormallink{IPrinterFactory}{\APIBase/IPrinter.html}
+ \end{itemize}
+
+
+%\section{ Supplements }
+
+\section{ Changes }
+
+ \begin{enumerate}
+  \item 02.01.2008 - fixed few references to obsolete API.
+  \item 28.06.2007 - added description of 'more concrete first' policy.
+  \item 28.03.2007 - reviewed and repackaged for version 2.0.0.
+  \item 07.03.2004 - cosmetics.
+  \item 07.02.2004 - changed description of default facts database.
+  \item 12.01.2004 - first external edition.
+  \item 22.01.2003 - first internal edition.
+  \item 8.10.2002 - created.
+ \end{enumerate}
+
+\bibliography{Bib} 
+
+\end{document}
+
+

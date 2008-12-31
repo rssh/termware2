@@ -1,0 +1,13 @@
+
+domain(algebra,
+
+  system(Monoid,default,
+         ruleset( 
+          import(SemiGroup),
+          $x*One -> $x,
+          One*$x -> $x
+                ),
+         FirstTop)
+
+);
+       

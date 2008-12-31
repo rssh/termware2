@@ -1,0 +1,24 @@
+#
+# from Rewrite Engines Competition.
+#
+#
+domain(examples,
+ domain(rec,
+  domain(ctrs,
+    #@option(reduceInFacts(true))
+    system(searchinconditions,default, 
+     ruleset(
+
+       a -> true,
+       a -> false, 
+                   
+       not($X) -> true [ $X == false ],
+
+       ##
+       # depends from strategy
+       T1->not(a)
+
+     ),TopDown)
+  )
+ )
+);

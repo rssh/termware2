@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE termware PUBLIC
+	"-//GradSoft//DTD TermWare ruleset//EN"
+	"http://www.gradsoft.ua/termware/termware.dtd">
+ <termware-text>
+<![CDATA[
+
+  system(QQQ,default,
+         ruleset( $x [ x!=QQQ ] -> QQQ ),
+         FirstTop
+         );
+
+]]>
+ </termware-text>

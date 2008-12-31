@@ -1,0 +1,28 @@
+This is TeX, Version 3.141592 (MiKTeX 2.2) (preloaded format=latex 2000.11.28)  18 FEB 2007 03:17
+**quit
+(C:\texmf\tex\latex\tools\.tex
+LaTeX2e <2001/06/01>
+Babel <v3.7h> and hyphenation patterns for english, french, german, ngerman, du
+mylang, nohyphenation, loaded.
+File ignored)
+*exit
+
+! LaTeX Error: Missing \begin{document}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+<*> e
+     xit
+? x
+ 
+Here is how much of TeX's memory you used:
+ 7 strings out of 96052
+ 174 string characters out of 1197190
+ 44375 words of memory out of 1048577
+ 3036 multiletter control sequences out of 35000
+ 3640 words of font info for 14 fonts, out of 500000 for 1000
+ 14 hyphenation exceptions out of 607
+ 5i,0n,4p,85b,14s stack positions out of 1500i,500n,5000p,200000b,32768s
+No pages of output.

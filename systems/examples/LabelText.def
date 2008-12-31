@@ -1,0 +1,35 @@
+
+domain(examples,
+  system(LabelText,javaFacts(LabelTextFacts,"ua.gradsoft.termwaredemos.labels.Facts"),
+         ruleset(
+           import(general),
+           import(String,concat),
+
+           INPUT($text) -> lines(String.split($text,"\n")),
+
+           lines([$x:$y]) -> concat(line($x),"\n",lines($y)),
+           lines([]) -> "",
+
+           line($line) -> words(String.split($line,"\\s+")),
+
+           words([$x:$y]) -> concat(word($x)," ",words($y)),
+           words([]) -> "",
+           
+           word($x)
+                [ String.matches($x,"@label\\{(\\w+)\\}",$name) ] 
+                               -> concat("[",toString($number),"]") 
+                                  [ assign($number,addName($name)) ]
+               |
+                [ String.matches($x,"@ref\\{(\\w+)\\}",$name) ]
+                               -> MakeRef($name)
+               |
+                [ isString($x) ] -> $x,
+  
+           MakeRef($name) [ isDefined($name) ] -> 
+                    concat("(see[",toString($number),"])")
+                    [assign($number,getNumber($name))]
+       
+         ),
+
+         BottomTop)
+);

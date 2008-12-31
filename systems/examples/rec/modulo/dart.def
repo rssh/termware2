@@ -1,0 +1,80 @@
+#
+# part of rewrite engines competition
+#
+# set changed to mset (set is reserved term)
+# ++ changed to pp
+# ** changed to mm
+#
+
+domain(examples,
+ domain(rec,
+  domain(modulo,
+    #@option(reduceInFacts(true))
+    #--@option(loggedEntity(All))
+    system(dart,default, 
+     ruleset(
+
+      0 + $N -> $N,
+      s($N)+$M -> s($N+$M),
+
+      0 * $N -> 0,
+      s($N)*$M -> $M+$N*$M,
+
+      u($S,empty) -> $S,
+      u($S,$S) -> $S,
+    
+      pp(empty,$S) -> $S,
+      pp(mset($I),mset($J)) -> mset($I+$J),
+      pp(u(mset($I),$S1),$S2) -> u(pp(mset($I),$S2),pp($S1,$S2)),
+
+      mm(empty,$S) -> $S,
+      mm(mset($I),mset($J)) -> mset($I*$J),
+      mm(u(mset($I),$S1),$S2) -> u(mm(mset($I),$S2),mm($S1,$S2)),
+
+      five -> s(s(s(s(s(0))))),
+      ten  -> s(s(s(s(s(five))))),
+      fifteen -> s(s(s(s(s(ten))))),
+      twentyfive -> s(s(s(s(s(s(s(s(s(s(fifteen)))))))))),
+      fifty -> twentyfive + twentyfive,
+
+      singles ->
+           pp(mset(s(0)),
+           pp(mset(s(s(0))),
+           pp(mset(s(s(s(0)))), 
+           pp(mset(s(s(s(s(0))))),
+           pp(mset(five),
+           pp(mset(s(five)),
+           pp(mset(s(s(five))),
+           pp(mset(s(s(s(five)))),
+           pp(mset(s(s(s(s(five))))),
+           pp(mset(ten),
+           pp(mset(s(ten)),
+           pp(mset(s(s(ten))),
+           pp(mset(s(s(s(ten)))),
+           pp(mset(s(s(s(s(ten))))),
+           pp(mset(fifteen),
+           pp(mset(s(fifteen)),
+           pp(mset(s(s(fifteen))),
+           pp(mset(s(s(s(fifteen)))),
+           pp(mset(s(s(s(s(fifteen))))),
+              mset(five+fifteen)
+                       )))))))))))))))))))
+         ,
+
+      doubles -> mm(singles, mset(s(s(0)))),
+      triples -> mm(singles, mset(s(s(s(0))))),
+
+      all -> u(singles,doubles,triples,mset(twentyfive),mset(fifty),mset(0)),
+
+      finish -> pp(u(doubles,mset(fifty)),pp(all,all)),
+
+
+      #get normal form for: 
+      # finish  
+      T1 -> finish
+
+     ),FirstTop
+    )
+  )
+ )
+);

@@ -1,0 +1,62 @@
+#
+# part of rewrite engines competition
+#
+#
+
+domain(examples,
+ domain(rec,
+  domain(modulo,
+    #@option(reduceInFacts(true))
+    #--@option(loggedEntity(All))
+    system(merge,default, 
+     ruleset(
+
+       b >= a -> true,
+       a >= b -> false,
+       $E >= $E -> true,
+       c($E,$S) >= $E2 -> $E >= $E2,
+       $E >= c($E,$S2) -> false,
+       $E >= c($E2,$S2) [$E!=$E2] -> $E >= $E2,
+       c($E,$S) >= c($E,$S2) -> $S >= $S2,
+       c($E,$S) >= c($E2,$S2) [ $E != $E2 ] -> $E >= $E2,
+
+       merge(nil,$L) -> $L,
+       merge($L, nil) -> $L,
+       merge(l($S,$L),l($S2,$L2)) [ $S >= $S2 ] 
+            -> l($S2,merge(l($S,$L),$L2))
+           !-> l($S,merge($L,l($S2,$L2))),
+
+       odd(nil) -> nil,
+       odd(l($S,nil)) -> l($S,nil),
+       odd(l($S,l($S2,$L))) -> l($S,odd($L)),
+       even(nil) -> nil,
+       even(l($S,nil)) -> nil,
+       even(l($S,l($S2,$L))) -> l($S2,even($L)),
+
+       sort(nil) -> nil,
+       sort(l($S,nil)) ->l($S,nil),
+       sort(l($S,l($S2,$L))) -> merge(sort(odd(l($S,l($S2,$L)))),
+                                      sort(even(l($S,l($S2,$L))))),
+
+       
+# get normal form for
+T1->
+    sort(
+    l(c(a, c(b, c(a, b))), l(c(b, c(a, c(b, b))), l(c(a, c(b, c(a, a))), l(c(b, c(b, c(b, b))), l(c(b, c(b, c(b, a))),
+    l(c(a, c(a, c(a, b))), l(c(b, c(b, c(a, a))), l(c(a, c(a, c(a, a))), l(c(a, c(a, c(b, b))), l(c(b, c(a, c(b, a))),
+    l(c(a, c(b, c(a, b))), l(c(b, c(a, c(b, b))), l(c(a, c(b, c(a, a))), l(c(b, c(b, c(b, b))), l(c(b, c(b, c(b, a))),
+    l(c(a, c(a, c(a, b))), l(c(b, c(b, c(a, a))), l(c(a, c(a, c(a, a))), l(c(a, c(a, c(b, b))), l(c(b, c(a, c(b, a))),
+    l(c(a, c(b, c(a, b))), l(c(b, c(a, c(b, b))), l(c(a, c(b, c(a, a))), l(c(b, c(b, c(b, b))), l(c(b, c(b, c(b, a))),
+    l(c(a, c(a, c(a, b))), l(c(b, c(b, c(a, a))), l(c(a, c(a, c(a, a))), l(c(a, c(a, c(b, b))), l(c(b, c(a, c(b, a))),
+    l(c(a, c(b, c(a, b))), l(c(b, c(a, c(b, b))), l(c(a, c(b, c(a, a))), l(c(b, c(b, c(b, b))), l(c(b, c(b, c(b, a))),
+    l(c(a, c(a, c(a, b))), l(c(b, c(b, c(a, a))), l(c(a, c(a, c(a, a))), l(c(a, c(a, c(b, b))), l(c(b, c(a, c(b, a))),
+    l(c(a, c(b, c(a, b))), l(c(b, c(a, c(b, b))), l(c(a, c(b, c(a, a))), l(c(b, c(b, c(b, b))), l(c(b, c(b, c(b, a))),
+    l(c(a, c(a, c(a, b))), l(c(b, c(b, c(a, a))), l(c(a, c(a, c(a, a))), l(c(a, c(a, c(b, b))), l(c(b, c(a, c(b, a))),
+    nil)))))))))))))))))))))))))))))))))))))))))))))))))))
+
+
+     ),TopDown
+    )
+  )
+ )
+);

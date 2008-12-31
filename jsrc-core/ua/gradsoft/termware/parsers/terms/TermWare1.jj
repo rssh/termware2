@@ -1,0 +1,2020 @@
+/*
+ * part of TermWare.
+ * (C) Ruslan Shevchenko <Ruslan@Shevchenko.Kiev.UA>
+ * 2002 - 2007
+ * $Id: TermWare1.jj,v 1.12 2008-08-04 08:28:02 rssh Exp $
+ */
+
+options {
+ STATIC=false;
+ JAVA_UNICODE_ESCAPE=true;
+ //DEBUG_PARSER=true;
+ }
+
+PARSER_BEGIN(TermReader)
+
+package ua.gradsoft.termware.parsers.terms;
+
+import java.io.*;
+import java.util.*;
+import java.math.*;
+
+import ua.gradsoft.termware.*;
+import ua.gradsoft.termware.exceptions.*;
+import ua.gradsoft.termware.parsers.terms.util.*;
+
+/**
+ * Parser for TermWare language.
+ **/
+public class TermReader
+{
+
+ public TermReader(InputStream in,String fname, int lineCorrection, TermWareInstance instance)
+ {
+  this(in);
+  fname_=fname;
+  lineCorrection_=lineCorrection;
+  instance_=instance;
+  if (instance_==null) {
+     throw new RuntimeException("null in instance parameter in TermReader constructor");
+  }
+ }
+ 
+ public TermReader(Reader in,String fname, int lineCorrection, TermWareInstance instance)
+ {
+  this(in);
+  fname_=fname;
+  lineCorrection_=lineCorrection;
+  instance_=instance;
+  if (instance_==null) {
+     throw new RuntimeException("null in instance parameter in TermReader constructor");
+  }
+ }
+
+ 
+ public static void main(String[] args) 
+ {
+  try {
+   TermReader termReader=new TermReader(System.in,"<stdin>");
+   for(;;) {
+     Term Term = termReader.readStatement();
+     Term.print(System.out);
+     if (Term.isNil()) break;
+   }
+  }catch(TermWareException ex){
+   System.err.print(ex.getMessage());
+  }catch(ParseException ex){
+   System.err.print(ex.getMessage());
+  }
+ } 
+
+ public  Term readStatementWrapped() throws TermWareException
+ {  
+  try {
+    return readStatement();
+  }catch(ParseException ex){
+    throw new TermParseException(ex.getMessage());
+  }catch(TokenMgrError ex){
+    throw new TermParseException(ex.getMessage());
+  }
+ }
+
+ public void setTermWareInstance(TermWareInstance instance)
+ {
+  instance_=instance;
+ }
+
+ public void setFname(String fname)
+ {
+  fname_=fname;
+ }
+
+ public StringIndex getStringIndex()
+ {
+   lazyInitXStringIndex();
+   return xStringIndex;
+ }
+
+ public final boolean eofReached() 
+   { return eofReached_; }
+
+ private void lazyInitXStringIndex()
+  { if (xStringIndex==null) xStringIndex=new StringIndex(); }
+
+ private StringIndex  xStringIndex=null;
+
+ private boolean eofReached_=false;
+ private String  fname_="<unknown>";
+ private int     line_=1;
+ private TermWareInstance instance_;
+ private boolean debug_=false;
+ private int     lineCorrection_=0;
+ 
+
+ Term  create(String name, Term[] body) throws TermWareException
+ {
+   if (instance_==null) {
+       System.err.println("TermReader.create - instance_ is null");
+   }
+   Term retval=instance_.getTermFactory().createComplexTerm(name,body);
+   if (body.length>0) {
+     retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",TermHelper.getAttribute(body[0],"__BEGIN_LINE__"));
+     retval=TermHelper.setAttribute(retval,"__END_LINE__",TermHelper.getAttribute(body[body.length-1],"__END_LINE__"));
+     retval=TermHelper.setAttribute(retval,"__FILE__",fname_);
+   }
+   return retval;
+ }
+
+ Term  createNil()
+ { return instance_.getTermFactory().createNil(); }
+
+ Term  create(String name, Term x1)  throws TermWareException
+ {
+   Term[] body=new Term[1];
+   body[0]=x1;
+   return create(name,body);
+ }
+
+ Term  create(String name, Term x1,Term x2)  throws TermWareException
+ {
+   Term[] body=new Term[2];
+   body[0]=x1;
+   body[1]=x2;
+   return create(name,body);
+ }
+
+ Term  create(String name, Term x1,Term x2,Term x3)  throws TermWareException
+ {
+   Term[] body=new Term[3];
+   body[0]=x1;
+   body[1]=x2;
+   body[2]=x3;
+   return create(name,body);
+ }
+
+ Term  create(String name, Term x1,Term x2,Term x3,Term x4)  throws TermWareException
+ {
+   Term[] body=new Term[4];
+   body[0]=x1;
+   body[1]=x2;
+   body[2]=x3;
+   body[3]=x4;
+   return create(name,body);
+ }
+
+ Term  create(String name, Term x1,Term x2,Term x3,Term x4,Term x5)  throws TermWareException
+ {
+   Term[] body=new Term[5];
+   body[0]=x1;
+   body[1]=x2;
+   body[2]=x3;
+   body[3]=x4;
+   body[4]=x5;
+   return create(name,body);
+ }
+
+ 
+ Term  createSet()  throws TermWareException
+ {
+  Term[] body=new Term[0];
+  return create("set",body);
+ }
+
+ Term  createSet(Term[] body)   throws TermWareException
+ {
+  return create("set",body);
+ }
+
+ Term  createSetPattern(Term frs,Term snd)  throws TermWareException
+ {
+  return create("set_pattern",frs,snd);
+ }
+
+ Term  createList(Term[] body)   throws TermWareException
+ {
+  Term retval = instance_.getTermFactory().createList(body);
+   if (body.length>0) {
+     retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",TermHelper.getAttribute(body[0],"__BEGIN_LINE__"));
+     retval=TermHelper.setAttribute(retval,"__END_LINE__",TermHelper.getAttribute(body[body.length-1],"__END_LINE__"));
+     retval=TermHelper.setAttribute(retval,"__FILE__",fname_);
+   }
+  return retval;
+ }
+
+ Term  createList(List<Term> body)   throws TermWareException
+ {
+   Term retval=instance_.getTermFactory().createList(body);
+   if (body.size()>0) {
+     retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",TermHelper.getAttribute(body.get(0),"__BEGIN_LINE__"));
+     retval=TermHelper.setAttribute(retval,"__END_LINE__",TermHelper.getAttribute(body.get(body.size()-1),"__END_LINE__"));
+     retval=TermHelper.setAttribute(retval,"__FILE__",fname_);
+   }   
+   return retval;
+ }
+
+
+
+ Term  addRightAssociativeClause(String clause,Term body,Term termToAppend)  throws TermWareException
+ {
+  Term curr=body;
+  Term prevCurr=null;
+  Term retval=null;
+  while(curr.getName().equals(clause)) {
+      prevCurr=curr;
+      curr=curr.getSubtermAt(1);
+  }
+  if (prevCurr!=null) {
+    prevCurr.setSubtermAt(1,create(clause,curr,termToAppend));
+    retval=body;
+  }else{
+    retval=create(clause,body,termToAppend);
+  }
+  return retval;
+ }
+
+ Term mayBeAction(Term t1, Term t2)  throws TermWareException
+ {
+  if (t2==null) {
+    return t1;
+  }else{
+    return create("action",t1,t2);
+  }
+ }
+
+
+}
+
+PARSER_END(TermReader)
+
+
+SKIP :
+{
+ < " " >
+|< "\t">
+|< "\n">  
+|< "\r">
+}
+
+SPECIAL_TOKEN :
+{
+ < "#"(~["@","\n"]) (~["\n"])* "\n" > 
+ |
+ < "#" "\n" >
+}
+
+
+/**
+ * <code>
+ *    statement :  term ";"
+ *               |
+ *                 term <EOF>
+ *               |
+ *                 <EOF>
+ * </code>
+ *@see TermReader#readTerm
+ **/
+Term readStatement() throws TermWareException:
+{
+ Term t;
+}
+{
+ ( LOOKAHEAD(2)
+  t=readTerm() ";"
+ |
+  t=readTerm() <EOF>
+  { eofReached_=true; }
+ |
+  <EOF>
+   { eofReached_=true; return TermFactory.createNil(); }
+ )
+ { return t; }
+}
+
+/**
+ * <code>
+ *  term : let_term | term_expression0
+ * </code>
+ *@see TermReader#readLetTerm
+ *@see TermReader#readTermExpression0
+ **/
+Term readTerm() throws TermWareException:
+{
+ Term t;
+}
+{
+ t=readLetTerm()
+ { return t; }
+ |
+ t=readTermExpression0()
+ { return t; }
+}
+
+/**
+ * <code>
+ *  let_term : "let" term
+ * </code> <br>
+ * 'let t' is synonim of let(t).
+ * default behaviour - add rule t to current ruleset.
+ *@see TermReader#readTerm 
+ **/
+Term readLetTerm() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+ Term t3=null;
+ Token tk=null;
+}
+{
+ tk="let" (LOOKAHEAD(3)( "(" t2=readWhereAssigments() ")" t3=readTerm() )| t1=readTerm() )
+  { 
+   Term retval=null; 
+   if (t1!=null) {
+     retval=create("let",t1);
+   }else{
+     retval=create("let",t2,t3);
+   }
+   return retval;
+  }
+}
+
+/**
+ * <code>
+ *  term_expression0 :  term_expression1 [ "[" term_expression1  "]" ] [ "->" term_expression0 [ "[" term_expression1 "]" ] ]
+ * </code> <br>
+ * Example:
+ * <pre>
+ *   x->y
+ *   fact($x) [|$x==1|] -> 1
+ * </pre>
+ *TODO:
+ * in addition we check (non-grammar) existence of comment to set help for main term of left pattern,
+ *  if our grammar is a rule.
+ *@see TermReader#readTermExpression1
+ **/
+Term readTermExpression0() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+ Term t3=null; 
+ Term t4=null;
+ Term e1=null;
+ Term e2=null;
+ Term e3=null; 
+ Term e4=null;
+ Term e5=null;
+ ArrayList<Term> elifConditions=null;
+ Token op=null;
+ Term retval=null;
+ Token tkE1Begin=null;
+ Token tkE1End=null;
+ Token tkE2Begin=null;
+ Token tkE2End=null;
+ Token tkE3Begin=null;
+ Token tkE3End=null;
+ Token tkE4Begin=null;
+ Token tkE4End=null;
+ Token tkE5Begin=null;
+ Token tkE5End=null;
+ Term  l1=null;
+ Token tkL1Begin=null;
+ Token tkL1End=null;
+ Term  l2=null;
+ Token tkL2Begin=null;
+ Token tkL2End=null;
+ Term  l3=null;
+ Token tkL3Begin=null;
+ Token tkL3End=null;
+ Term  l4=null;
+ Token tkL4Begin=null;
+ Token tkL4End=null;
+ Term  w1=null;
+ Token tkW1Begin=null;
+ Token tkW1End=null;
+ Term  w2=null;
+ Token tkW2Begin=null;
+ Token tkW2End=null;
+ Term  w3=null;
+ Token tkW3Begin=null;
+ Token tkW3End=null;
+ Term  w4=null;
+ Token tkW4Begin=null;
+ Token tkW4End=null;
+}
+{
+ t1=readTermExpression1() 
+      (LOOKAHEAD(2) 
+        (
+          tkL1Begin="let" "(" l1=readWhereAssigments() tkL1End=")"
+          {
+             l1=TermHelper.setAttribute(l1,"__FILE__",fname_);
+             l1=TermHelper.setAttribute(l1,"__BEGIN_LINE__",tkL1Begin.beginLine+lineCorrection_);
+             l1=TermHelper.setAttribute(l1,"__END_LINE__",tkL1End.endLine+lineCorrection_);          
+          }
+        )?                 
+        ( tkE1Begin="[" e1=readTermExpression1() tkE1End="]" 
+           {
+             e1=TermHelper.setAttribute(e1,"__FILE__",fname_);
+             e1=TermHelper.setAttribute(e1,"__BEGIN_LINE__",tkE1Begin.beginLine+lineCorrection_);
+             e1=TermHelper.setAttribute(e1,"__END_LINE__",tkE1End.endLine+lineCorrection_);          
+           }
+        )? 
+        (
+          tkW1Begin="where" "(" w1=readWhereAssigments() tkW1End=")"
+           {
+             w1=TermHelper.setAttribute(w1,"__FILE__",fname_);
+             w1=TermHelper.setAttribute(w1,"__BEGIN_LINE__",tkW1Begin.beginLine+lineCorrection_);
+             w1=TermHelper.setAttribute(w1,"__BEGIN_LINE__",tkW1End.endLine+lineCorrection_);
+           }
+        )?
+        <LEFT_ARROW> 
+          (
+            tkL2Begin="let" "(" l2=readWhereAssigments() tkL2End=")"
+            {
+             l2=TermHelper.setAttribute(l2,"__FILE__",fname_);
+             l2=TermHelper.setAttribute(l2,"__BEGIN_LINE__",tkL2Begin.beginLine+lineCorrection_);
+             l2=TermHelper.setAttribute(l2,"__END_LINE__",tkL2End.endLine+lineCorrection_);          
+            }
+          )?
+           t2=readTermExpression1() 
+          (LOOKAHEAD(2) tkE2Begin="[" e2=readTermExpression1() tkE2End="]" 
+            {
+             e2=TermHelper.setAttribute(e2,"__FILE__",fname_);
+             e2=TermHelper.setAttribute(e2,"__BEGIN_LINE__",tkE2Begin.beginLine+lineCorrection_);
+             e2=TermHelper.setAttribute(e2,"__END_LINE__",tkE2End.endLine+lineCorrection_);
+            }
+          )?
+          (
+            tkW2Begin="where" "(" w2=readWhereAssigments() tkW2End=")"
+           {
+             w2=TermHelper.setAttribute(w2,"__FILE__",fname_);
+             w2=TermHelper.setAttribute(w2,"__BEGIN_LINE__",tkW2Begin.beginLine+lineCorrection_);
+             w2=TermHelper.setAttribute(w2,"__BEGIN_LINE__",tkW2End.endLine+lineCorrection_);
+           }
+          )?
+        (
+          (
+           <BIT_OR>               
+              tkE3Begin="[" e3=readTermExpression1() tkE3End="]"  
+                     <LEFT_ARROW> 
+              ( tkL3Begin="let" "(" l3=readWhereAssigments() tkL3End=")" 
+               {
+                l3=TermHelper.setAttribute(l3,"__FILE__",fname_);
+                l3=TermHelper.setAttribute(l3,"__BEGIN_LINE__",tkL3Begin.beginLine+lineCorrection_);
+                l3=TermHelper.setAttribute(l3,"__END_LINE__",tkL3End.endLine+lineCorrection_);          
+               }
+              )?
+              t3=readTermExpression1() 
+           (LOOKAHEAD(2) tkE4Begin="[" e4=readTermExpression1() tkE4End="]" )?  
+           (
+             tkW3Begin="where" "("  w3=readWhereAssigments() tkW3End=")"
+           {
+             w3=TermHelper.setAttribute(w3,"__FILE__",fname_);
+             w3=TermHelper.setAttribute(w3,"__BEGIN_LINE__",tkW3Begin.beginLine+lineCorrection_);
+             w3=TermHelper.setAttribute(w3,"__BEGIN_LINE__",tkW3End.endLine+lineCorrection_);
+           }
+           )?
+          ) { 
+             if (elifConditions==null) {
+               elifConditions=new ArrayList<Term>(); 
+             }
+             Term elifTerm=null;
+             if (e4==null) {               
+               if (l3!=null) {
+                   t3=create("let",l3,t3);
+               }
+               if (w3!=null) {
+                   t3=create("where",t3,w3);
+               }
+               elifTerm=create("elif",e3,t3);
+               elifTerm=TermHelper.setAttribute(elifTerm,"__FILE__",fname_);
+               elifTerm=TermHelper.setAttribute(elifTerm,"__BEGIN_LINE__",tkE3Begin.beginLine+lineCorrection_);
+               elifTerm=TermHelper.setAttribute(elifTerm,"__END_LINE__",tkE3End.beginLine+lineCorrection_);
+             }else{
+               Term action=create("action",t3,e4);
+               action=TermHelper.setAttribute(action,"__FILE__",fname_);
+               action=TermHelper.setAttribute(action,"__BEGIN_LINE__",tkE4Begin.beginLine+lineCorrection_);
+               action=TermHelper.setAttribute(action,"__END_LINE__",tkE4End.beginLine+lineCorrection_);
+               if (l3!=null) {
+                 action=create("let",l3,action);
+               }
+               if (w3!=null) {
+                 action=create("where",action,w3);
+               }
+               elifTerm=create("elif",e3,action);
+               elifTerm=TermHelper.setAttribute(elifTerm,"__FILE__",fname_);
+               elifTerm=TermHelper.setAttribute(elifTerm,"__BEGIN_LINE__",tkE3Begin.beginLine+lineCorrection_);
+               elifTerm=TermHelper.setAttribute(elifTerm,"__END_LINE__",tkE3End.beginLine+lineCorrection_);
+             }             
+             elifConditions.add(elifTerm);
+             e3=null;
+             t3=null;
+             e4=null;
+             l3=null;
+             w3=null;
+            } 
+
+        )* 
+        ( "!->" 
+                  ( tkL4Begin="let" "(" l4=readWhereAssigments() tkL4End=")" 
+                    {
+                     l4=TermHelper.setAttribute(l4,"__FILE__",fname_);
+                     l4=TermHelper.setAttribute(l4,"__BEGIN_LINE__",tkL4Begin.beginLine+lineCorrection_);
+                     l4=TermHelper.setAttribute(l4,"__END_LINE__",tkL4End.endLine+lineCorrection_);          
+                    }
+                  )?
+                  t4=readTermExpression1()
+                              (LOOKAHEAD(2) tkE5Begin="[" e5=readTermExpression1() tkE5End="]" 
+                                  {
+                                    e5=TermHelper.setAttribute(e5,"__FILE__",fname_);
+                                    e5=TermHelper.setAttribute(e5,"__BEGIN_LINE__",tkE5Begin.beginLine+lineCorrection_);
+                                    e5=TermHelper.setAttribute(e5,"__END_LINE__",tkE5End.beginLine+lineCorrection_); 
+                                  }
+                              )? 
+                             ( tkW4Begin="where" "(" w4=readWhereAssigments() tkW4End=")" 
+                              {
+                                w4=TermHelper.setAttribute(w4,"__FILE__",fname_);
+                                w4=TermHelper.setAttribute(w4,"__BEGIN_LINE__",tkW4Begin.beginLine+lineCorrection_);
+                                w4=TermHelper.setAttribute(w4,"__BEGIN_LINE__",tkW4End.endLine+lineCorrection_);
+                              }
+                             )?
+
+        )?                           
+      )?
+  {
+   if (e1==null && t2==null) {
+     retval=t1;
+   }else if (e1==null && t2!=null && e2==null && elifConditions==null && t4==null) {
+     if (l1!=null) {
+        t1=create("let",l1,t1);
+     }     
+     if (w1!=null) {
+        t1=create("where",t1,w1);
+     }
+     if (l2!=null) {
+        t2=create("let",l2,t2);
+     }
+     if (w2!=null) {
+        t2=create("where",t2,w2);
+     }
+     retval=create("rule",t1,t2); 
+   }else if (e1==null && t2!=null && e2==null && elifConditions==null && t4!=null) {
+     // t1 -> t2 !-> t4
+     throw new AssertException("Invalid construction: t  -> t1 !-> t2 ");    
+   }else if (e1==null && t2!=null && e2==null && elifConditions!=null) {
+     throw new AssertException("Invalid construction: t  -> t1 | [p] -> t2 ");    
+   }else if (e1==null && t2!=null && e2!=null && elifConditions==null && t4==null) {
+     Term action_term=create("action",t2,e2);
+     if (l2!=null) {
+        action_term=create("let",l2,action_term);
+     }
+     if (w2!=null) {
+        action_term=create("where",action_term,w2);
+     }
+     if (l1!=null) {
+        t1=create("let",l1,t1);
+     } 
+     if (w1!=null) {
+        t1=create("where",t1,w1);
+     }
+     retval=create("rule",t1,action_term);
+   }else if (e1==null && t2!=null && e2!=null && elifConditions==null && t4!=null) {
+     throw new AssertException("Invalid construction: t  -> t1 [a] |-> t2 ");    
+   }else if (e1==null && t2!=null && e2!=null && elifConditions!=null ) {
+     throw new AssertException("Invalid construction: t  -> t1 [a] | [p] -> t2 ");    
+   }else if (e1!=null && t2==null && e2==null) {
+     throw new AssertException("Impossible grammar construction: x [p] ");
+     // 
+     // this is legal from grammar point of view, but have no rewriting
+     //  semantics.
+   }else if (e1!=null && t2==null && e2!=null) {
+     // impossible  
+     throw new AssertException("Impossible grammar construction: t[x]->[y]");
+   }else if (e1!=null && t2!=null && elifConditions==null && t4==null) {
+     if (l1!=null) {
+        t1=create("let",l1,w1);
+     } 
+     if (w1!=null) {
+        w1=create("where",t1,w1);
+     }
+     Term mayBeAction=mayBeAction(t2,e2);
+     if (l2!=null) {
+       mayBeAction=create("let",l2,mayBeAction);       
+     }
+     if (w2!=null) {
+       mayBeAction=create("where",mayBeAction,w2);
+     }
+     retval=create("if_rule",t1,e1,mayBeAction);
+   }else if (e1!=null && t2!=null && elifConditions==null && t4!=null) {
+     Term mba1=mayBeAction(t2,e2);
+     if (l2!=null) {
+       mba1=create("let",l2,mba1);
+     }
+     if (w2!=null) {
+       mba1=create("where",mba1,w2);
+     }
+     Term mba2=mayBeAction(t4,e5);
+     if (l4!=null) {
+       mba2=create("let",l4,mba2);
+     }
+     if (w4!=null) {
+       mba2=create("where",mba2,w4);
+     }
+     if (l1!=null) {
+       t1=create("let",l1,t1);
+     }
+     if (w1!=null) {
+       t1=create("where",t1,w1);
+     }
+     retval=create("if_rule",t1,e1,mba1,createNil(),mba2);
+   }else if (e1!=null && t2!=null && elifConditions!=null && t4==null) {
+     Term mba=mayBeAction(t2,e2);
+     if (l2!=null) {
+       mba=create("where",mba,l2);
+     }
+     if (w2!=null) {
+       mba=create("where",mba,w2);
+     }
+     Term elifs=createList(elifConditions);
+     if (l1!=null) {
+       t1=create("let",l1,t1);
+     }
+     if (w1!=null) {
+       t1=create("where",t1,w1);
+     }
+     retval=create("if_rule",t1,e1,mba,elifs);
+   }else if (e1!=null && t2!=null && elifConditions!=null && t4!=null) {
+     Term mba1=mayBeAction(t2,e2);
+     if (l2!=null) {
+         mba1=create("let",l2,mba1);
+     }
+     if (w2!=null) {
+         mba1=create("where",mba1,w2);
+     }
+     Term mba2=mayBeAction(t4,e5);
+     if (l4!=null) {
+         mba2=create("let",l4,mba2);
+     }
+     if (w4!=null) {
+        mba2=create("where",mba2,w4);
+     }
+     Term elifs=createList(elifConditions);
+     retval=create("if_rule",t1,e1,mba1,elifs,mba2);
+   }else{
+     throw new AssertException("Impossible grammar construction");     
+   }
+   Term commentAttribute=TermHelper.getAttribute(t1,"comment");
+   if (!commentAttribute.isNil()) {
+     retval=TermHelper.setAttribute(retval,"comment",commentAttribute);
+   }
+   return retval;
+  }
+
+}
+
+
+Term readTermExpressionWhere() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+}
+{
+  t1=readTermExpression1() [ "where" "(" t2=readWhereAssigments() ")"  ]
+  {
+    if (t2==null) {
+      return t1;
+    }else{
+      return create("where",t1,t2);
+    }
+  }
+}
+
+
+Term readWhereAssigments() throws TermWareException:
+{
+  Term tx1;
+  Term tx2;
+  Term te1;
+  Term te2;
+  LinkedList<Term> assigments=null;
+}
+{
+   tx1=readX() "<-" te1=readTermExpression0() ( <COMMA> tx2=readX() "<-" te2=readTermExpression0() 
+                                               {
+                                                if (assigments==null) {
+                                                   assigments=new LinkedList<Term>();
+                                                }
+                                                assigments.addLast(create("pair",tx2,te2));
+                                               }
+                                              )*
+   {
+     if (assigments==null) {
+         assigments=new LinkedList<Term>();
+     }
+     assigments.addFirst(create("pair",tx1,te1));
+     return createList(assigments);
+   }   
+}
+
+/**
+ * <code>
+ *  term_expression1 :  term_expression2 [ "?" term_expression1 ":" term_expression1 ]
+ * </code>
+ *<br>
+ * Example:<br>
+ * <pre>
+ *    x ? y : z
+ * </pre>
+ *  is synonim for if(x,y,z)
+ *@see TermReader#readTermExpression1
+ *@see TermReader#readTermExpression2
+ **/
+Term readTermExpression1() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;                    
+ Term t3=null;
+ Token op=null;
+ Term retval=null;
+}
+{
+ t1=readTermExpression2() (
+                            ( op=<QUESTION> t2=readTermExpression1() <TWO_DOTS> t3=readTermExpression1() )
+                          )?
+
+  {
+   if (t2==null)
+     retval=t1;
+   else {
+     retval=create("if",t1,t2,t3); 
+     Term commentAttribute=TermHelper.getAttribute(t1,"comment");
+     if (!commentAttribute.isNil()) {
+         retval=TermHelper.setAttribute(retval,"comment",commentAttribute);
+     }
+   }
+   return retval;
+  }
+  
+}                        
+
+
+
+/**
+ * <code>
+ *  term_expression2 :  term_expression3 [ "||" term_expression2 ]
+ * </code>
+ *<br>
+ *
+ *<ul>
+ * <li> x || y is synonim for logical_or(x,y) </li>
+ *<ul>
+ *@see TermReader#readTermExpression2
+ *@see TermReader#readTermExpression3
+ **/
+Term readTermExpression2() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+ Term t3=null;
+ Token op=null;
+ Term retval=null;
+}
+{
+ t1=readTermExpression3() (
+                            ( op=<LOGICAL_OR> t2=readTermExpression2() )
+                          )?
+
+  {
+   if (t2==null)
+     retval=t1;
+   else {
+     retval=create("logical_or",t1,t2); 
+     Term commentAttribute=TermHelper.getAttribute(t1,"comment");
+     if (!commentAttribute.isNil()) {
+         retval=TermHelper.setAttribute(retval,"comment",commentAttribute);
+     }
+     retval=TermHelper.setAttribute(retval,"__LINE__",op.beginLine+lineCorrection_);
+   }
+   return retval;
+  } 
+}                        
+
+/**
+ * <code>
+ *  term_expression3 :  term_expression4 [ "&&" term_expression3 ]
+ * </code>
+ *<br>
+ *
+ *<ul>
+ * <li> x && y is synonim for logical_and(x,y) </li>
+ *</ul>
+ *@see TermReader#readTermExpression3
+ *@see TermReader#readTermExpression4
+ **/
+Term readTermExpression3() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+ Token op=null;
+ Term retval=null;
+}
+{
+ t1=readTermExpression4() ( op=<LOGICAL_AND> t2=readTermExpression3() )?
+  {
+   if (t2==null)
+     retval=t1;
+   else { 
+     retval=create("logical_and",t1,t2); 
+     Term commentAttribute=TermHelper.getAttribute(t1,"comment");
+     if (!commentAttribute.isNil()) {
+         retval=TermHelper.setAttribute(retval,"comment",commentAttribute);
+     }
+     retval=TermHelper.setAttribute(retval,"__LINE__",op.beginLine+lineCorrection_);
+   }
+   return retval;
+  }
+}                        
+
+/**
+ * <code>
+ *  term_expression4 :  term_expression5 
+ * </code>
+ *<br>
+ *@see TermReader#readTermExpression4
+ *@see TermReader#readTermExpression5
+ **/
+Term readTermExpression4() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+ String op=null;
+ Term retval=null;
+}
+{
+ t1=readTermExpression5() /* (LOOKAHEAD(2) <BIT_OR> t2=readTermExpression4() )? */
+  {
+   if (t2==null)
+     retval=t1;
+   else { 
+     retval=create("bit_or",t1,t2); 
+     Term commentAttribute=TermHelper.getAttribute(t1,"comment");
+     if (!commentAttribute.isNil()) {
+         retval=TermHelper.setAttribute(retval,"comment",commentAttribute);
+     }
+   }
+   return retval;
+  }
+}                        
+
+/**
+ * <code>
+ *  term_expression5 :  term_expression6 [ "&" term_expression5 ]
+ * </code>
+ * <br>
+ *<ul>
+ * <li> <code> x & y </code> is synonim for bit_and(x,y) </li>
+ *</ul>
+ *@see TermReader#readTermExpression5
+ *@see TermReader#readTermExpression6
+ **/
+Term readTermExpression5() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+ Token op=null;
+ Term retval=null;
+}
+{
+ t1=readTermExpression6() ( op=<BIT_AND> t2=readTermExpression5() )?
+  {
+   if (t2==null) {
+     retval=t1;
+   }else{
+     retval=create("bit_and",t1,t2); 
+     Term commentAttribute=TermHelper.getAttribute(t1,"comment");
+     if (!commentAttribute.isNil()) {
+         retval=TermHelper.setAttribute(retval,"comment",commentAttribute);
+     }
+     retval=TermHelper.setAttribute(retval,"__LINE__",op.beginLine+lineCorrection_);
+   }
+   return retval;
+  }
+}                        
+
+
+/**
+ * <code>
+ *  term_expression6 :  term_expression7 [ ( "==" | "!=" ) term_expression7 ]
+ * </code> 
+ *<br>
+ *
+ *<ul>
+ * <li> x == y is synonim for eq(x,y) </li>
+ * <li> x != y is synonim for neq(x,y) </li>
+ *</ul>
+ *@see TermReader#readTermExpression7
+ **/
+Term readTermExpression6() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+ Token op=null;
+ Term retval=null;
+}
+{
+ t1=readTermExpression7() ( (op=<EQ> | op=<NEQ>) t2=readTermExpression7() )?
+  {
+   if (t2==null)
+     retval=t1;
+   else {
+     if (op.kind==EQ) {
+         retval=create("eq",t1,t2); 
+     }else{
+         retval=create("neq",t1,t2);
+     }
+     Term commentAttribute=TermHelper.getAttribute(t1,"comment");
+     if (!commentAttribute.isNil()) {
+         retval=TermHelper.setAttribute(retval,"comment",commentAttribute);
+     }
+     retval=TermHelper.setAttribute(retval,"__LINE__",op.beginLine+lineCorrection_);
+   }
+   return retval;
+  }
+}                        
+
+/**
+ * <code>
+ *  term_expression7 :  term_expression8 [ ( "<" | ">" | "<=" | ">=" | "=>" | "in" ) term_expression8 ]
+ * </code>
+ * <br>
+ *
+ * <ul>
+ * <li> x < y is synonim for less(x,y) </li>
+ * <li> x > y is synonim for greater(x,y) </li>
+ * <li> x <= y is synonim for less_eq(x,y) </li>
+ * <li> x >= y is synonim for greater_eq(x,y) </li>
+ * <li> x => y is synonim for eq_greater(x,y) </li>
+ * <li> x in y is synonim for  _in(x,y) </li>
+ * </ul>
+ *
+ *@see TermReader#readTermExpression8
+ **/
+Term readTermExpression7() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+ Token op=null;
+ Term retval=null;
+}
+{
+ t1=readTermExpression8() ( (op=<LESS> | op=<GREATER> | op=<LESS_EQ> | op=<GREATER_EQ> | op=<EQ_GREATER> | op=<IN> ) t2=readTermExpression8() )?
+  {
+   if (t2==null) {
+     retval=t1;
+   } else {
+     switch(op.kind) {
+       case LESS:
+         retval=create("less",t1,t2); 
+         break;
+       case GREATER:
+         retval=create("greater",t1,t2); 
+         break;
+       case LESS_EQ:
+         retval=create("less_eq",t1,t2);
+         break;
+       case GREATER_EQ:
+         retval=create("greater_eq",t1,t2);
+         break;
+       case EQ_GREATER:
+         retval=create("eq_greater",t1,t2);
+         break;
+       case IN:
+         retval=create("_in",t1,t2);
+         break;
+       default:
+         throw new AssertException("unknown binary operation");
+     }
+     Term commentAttribute=TermHelper.getAttribute(t1,"comment");
+     if (!commentAttribute.isNil()) {
+         retval=TermHelper.setAttribute(retval,"comment",commentAttribute);
+     }
+     retval=TermHelper.setAttribute(retval,"__LINE__",op.beginLine+lineCorrection_);
+   }
+   return retval;
+  }
+}                        
+
+/**
+ * <code>
+ *  term_expression8 :  term_expression9 ( ( "<<" | ">>" ) term_expression9 )*
+ * </code>
+ * <br>
+ *
+ * <ul>
+ * <li> <code> x << y </code> is synonim for left_shift(x,y) </li>
+ * <li> <code> x >> y </code> is synonim for right_shift(x,y) </li>
+ * </ul>
+ *
+ *@see TermReader#readTermExpression9
+ **/
+Term readTermExpression8() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+ Term t3=null;
+ String op=null;
+ Token tkOp=null;
+ Term retval=null;
+}
+{
+ t1=readTermExpression9() ( 
+                           (
+                            (
+                             tkOp=<LEFT_SHIFT>
+                                { op="left_shift";  }
+                             |
+                             tkOp=<RIGHT_SHIFT>
+                                { op="right_shift"; }
+                            )
+                            t2=readTermExpression9()
+                           )
+                            { if (t3==null) {
+                                 t3=create(op,t1,t2);
+                                 t3=TermHelper.setAttribute(t3,"__LINE__",tkOp.beginLine+lineCorrection_);                                 
+                              } else {
+                                 Term t3p = t3;
+                                 t3=create(op,t3p,t2);
+                                 t3=TermHelper.setAttribute(t3,"__LINE__",tkOp.beginLine+lineCorrection_);                                 
+                              }
+                            }
+                           )
+                            *
+                             
+  {
+   if (t2==null) {
+     retval=t1;
+   } else {
+     retval=t3; 
+     Term commentAttribute=TermHelper.getAttribute(t1,"comment");
+     if (!commentAttribute.isNil()) {
+         retval=TermHelper.setAttribute(retval,"comment",commentAttribute);
+     }     
+   }
+   return retval;
+  }
+}                        
+
+
+/**
+ * <code>
+ *  term_expression9 :  term_expression10 ( ( "+" | "-" ) term_expression10 )*
+ * </code>
+ * <br>
+ *
+ * <ul>
+ * <li> <code> x + y </code> is synonim for plus(x,y) </li>
+ * <li> <code> x - y </code> is synonim for minus(x,y) </li>
+ * </ul>
+ *
+ *@see TermReader#readTermExpression10
+ *TODO: commentAttribute.
+ **/
+Term readTermExpression9() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+ Term t3=null;
+ String op=null;
+ Token tkOp=null;
+}
+{
+ t1=readTermExpression10() ( 
+                           (
+                            (
+                             tkOp=<PLUS>
+                                { op="plus";  }
+                             |
+                             tkOp=<MINUS>
+                                { op="minus"; }
+                            )
+                            t2=readTermExpression10()
+                           )
+                            { if (t3==null) {
+                                 t3=create(op,t1,t2);
+                                 t3=TermHelper.setAttribute(t3,"__LINE__",tkOp.beginLine+lineCorrection_);                                 
+                              } else {
+                                 Term t3p=t3;
+                                 t3=create(op,t3p,t2);
+                                 t3=TermHelper.setAttribute(t3,"__LINE__",tkOp.beginLine+lineCorrection_);                                 
+                              }
+                            }
+                           )
+                            *                             
+  {
+   if (t2==null)
+     return t1;
+   else 
+     return t3; 
+  }
+}                        
+
+
+/**
+ * <code>
+ *  term_expression10 :  term_expression11 ( ( "*" | "/" | "%" ) term_expression11 )*
+ * </code>
+ * <br>
+ *
+ * <ul>
+ * <li> <code> x * y </code> is synonim for multiply(x,y) </li>
+ * <li> <code> x / y </code> is synonim for divide(x,y) </li>
+ * <li> <code> x % y </code> is synonim for mod(x,y) </li>
+ * </ul>
+ *
+ *@see TermReader#readTermExpression11
+ **/
+Term readTermExpression10() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+ Term t3=null;
+ String op=null;
+ Token tkOp=null;
+}
+{
+ t1=readTermExpression11() (LOOKAHEAD(2)
+                           (
+                            (
+                             tkOp=<MULTIPLY>
+                                { op="multiply";  }
+                             |
+                             tkOp=<DIVIDE>
+                                { op="divide"; }
+                             |
+                             tkOp=<MOD>
+                                { op="mod"; }
+                            )
+                            t2=readTermExpression11()
+                           )
+                            { if (t3==null) {
+                                 t3=create(op,t1,t2);
+                                 t3=TermHelper.setAttribute(t3,"__LINE__",tkOp.beginLine+lineCorrection_);                                 
+                              } else {
+                                 Term t3p=t3;
+                                 t3=create(op,t3p,t2);
+                                 t3=TermHelper.setAttribute(t3,"__LINE__",tkOp.beginLine+lineCorrection_);                                 
+                              }
+                            }
+                           )
+                            *
+                             
+  {
+   if (t2==null)
+     return t1;
+   else 
+     return t3; 
+  }
+}                        
+
+/**
+ * <code>
+ *  term_expression11 : ( [ "+" | "-" | "!" | "~" ] term_expression10 )
+ *                     |
+ *                       term_expression12
+ * </code>
+ * <br>
+ *
+ * <ul>
+ * <li> <code> +x </code> is synonim for plus(x) </li>
+ * <li> <code> -x </code> is synonim for minus(x) </li>
+ * <li> <code> !x </code> is synonim for logical_not(x) </li>
+ * <li> <code> ~x </code> is synonim for bit_negate(x) </li>
+ * </ul>
+ *
+ *@see TermReader#readTermExpression10
+ *@see TermReader#readTermExpression12
+ **/
+Term readTermExpression11() throws TermWareException:
+{
+ Term t1;
+ Token op;
+}
+{
+ ( op=<PLUS> | op=<MINUS> | op=<LOGICAL_NOT> | op=<BIT_NEGATE> ) t1=readTermExpression10()
+   { 
+     Term retval=null;
+     switch(op.kind) {
+       case PLUS: 
+         if (t1.isInt() || t1.isDouble()) {
+            retval=t1;
+         }else{
+            retval=create("plus",t1);
+            retval=TermHelper.setAttribute(retval,"__LINE__",op.beginLine+lineCorrection_);                                 
+         }
+         break;
+       case MINUS: 
+         if (t1.isInt()) {
+           retval=instance_.getTermFactory().createInt(-t1.getInt());
+         }else if (t1.isDouble()) {
+           retval=instance_.getTermFactory().createDouble(-t1.getDouble());
+         }else{
+           retval=create("minus",t1);
+           retval=TermHelper.setAttribute(retval,"__LINE__",op.beginLine+lineCorrection_);                                 
+         }
+         break;
+       case LOGICAL_NOT: 
+         retval=create("logical_not",t1);
+         retval=TermHelper.setAttribute(retval,"__LINE__",op.beginLine+lineCorrection_);                                 
+         break;
+       case BIT_NEGATE: 
+         retval=create("bit_negate",t1);
+         retval=TermHelper.setAttribute(retval,"__LINE__",op.beginLine+lineCorrection_);                                 
+         break;
+       default:
+         throw new AssertException("unknown unary operation");
+     }
+     return retval;
+   }
+ |
+ t1=readTermExpression12()
+   { return t1; }
+}
+
+
+/**
+ * <code>
+ *  term_expression12 : term_expression13 ( "." term_expression13 )*
+ * </code>
+ * <br>
+ *
+ * <ul>
+ * <li> <code> x.y </code> is synonim for apply(x,y) </li>
+ * </ul>
+ *
+ *@see TermReader#readTermExpression13
+ **/
+Term readTermExpression12() throws TermWareException:
+{
+ Term t1=null;
+ Term t2=null;
+ Term t3=null;
+ Token firstDot=null;
+ Token secondDot=null;
+}
+{
+  (firstDot=<DOT>)? t1=readTermExpression13() ( 
+                             (
+                              secondDot=<DOT> (t2=readTermExpression13())
+                             )
+                             { if (t3==null) {
+                                 t3=create("apply",t1,t2);
+                                 t3=TermHelper.setAttribute(t3,"__LINE__",secondDot.beginLine+lineCorrection_);                                 
+                               } else {
+                                 Term t3p=t3;
+                                 t3=create("apply",t3p,t2);
+                                 t3=TermHelper.setAttribute(t3,"__LINE__",secondDot.beginLine+lineCorrection_);                                 
+                               }
+                             }
+                           )*
+   { 
+    if (firstDot==null) {
+     if (t3==null) {
+      return t1;
+     } else {
+      return t3;                
+     }                        
+    }else{
+     if (t3==null) {
+        Term retval=create("jcall",t1);
+        retval=TermHelper.setAttribute(retval,"__LINE__",firstDot.beginLine+lineCorrection_);                                 
+        return retval;
+     }else{
+        Term retval=create("jcall",t3);   
+        retval=TermHelper.setAttribute(retval,"__LINE__",firstDot.beginLine+lineCorrection_);                                 
+        return retval;        
+     }
+    }
+   }
+}
+
+
+
+
+/**
+ * <code>
+ *  term_expression13 : term_expression_14 [ ".." ( x ) ]
+ * </code>
+ * <br>
+ *
+ *
+ *@see TermReader#readTermExpression14
+ **/
+Term readTermExpression13() throws TermWareException:
+{
+ Term t1;
+ Term t2=null;
+ Token op=null;
+}
+{
+ t1=readTermExpression14() [ op=<ARGS_DOTS> "(" t2=readX() ")" ]
+   { 
+     if (t2==null) {
+        return t1; 
+     } else {
+        Term retval = create("args_pattern",t1,t2);
+        retval=TermHelper.setAttribute(retval,"__LINE__",op.beginLine+lineCorrection_);                                 
+        return retval;        
+     }
+   }
+}
+
+/**
+ * <code>
+ *  term_expression14 : term_expression_last
+ * </code>
+ * <br>
+ *
+ *
+ *@see TermReader#readTermExpressionLast
+ **/
+Term readTermExpression14() throws TermWareException:
+{
+ Term t1;
+ HashMap<String,Term> attributes=null;
+ Token tk;
+ Term  a;
+}
+{
+   (<NAMPERSAND> tk=<IDENT> "(" a=readTerm() ")"
+    {
+     if (attributes==null) {
+       attributes=new HashMap<String,Term>();
+     }
+     attributes.put(tk.image,a);
+    }
+   )* 
+     t1=readTermExpression15()
+   { 
+     if (attributes!=null) {
+        for(Map.Entry<String,Term> e: attributes.entrySet()) {
+          t1=TermHelper.setAttribute(t1,e.getKey(),e.getValue());
+        }
+     }
+     return t1; 
+   }
+}
+
+/**
+ * <code>
+ *  term_expression15 : term_expression_last
+ * </code>
+ * <br>
+ *
+ *
+ *@see TermReader#readTermExpressionLast
+ **/
+Term readTermExpression15() throws TermWareException:
+{
+ Term t1;
+}
+{
+ t1=readTermExpressionLast()
+   { return t1; }
+}
+
+
+/**
+ * <code>
+ *  term_expression_last : scoped_name [ term_args ] | primitive | x | "(" term ")" | "{" term set_tail "}" | "{" "}" | "[" term_comma_list "]"
+ * </code>
+ * <br>
+ *
+ * <ul>
+ * <li> <code> { x1, x2, .. xn } </code> is synonim for set(x1,..xn) </li>
+ * <li> <code> { x, $x } </code> is synonim for set_pattern(x,$x) </li>
+ * <li> <code> {  } </code> is synonim for empty set </li>
+ * <li> <code> [ x1, x2, .. xN ] </code> is synonim for cons(x1,cons(x2, ...cons(xN-1,xN)...)) </li>
+ * </ul>
+ *
+ *@see TermReader#readScopedName
+ *@see TermReader#readTermArgs
+ *@see TermReader#readPrimitive
+ *@see TermReader#readX
+ *@see TermReader#readTerm
+ *@see TermReader#readPatternTail
+ *@see TermReader#readTermCommaList
+ **/
+Term readTermExpressionLast() throws TermWareException :
+{
+ Term retval;
+ Term termName;
+ Term[]  termBody=null;
+ Term t1=null;
+ Term t2=null; 
+ Token tk1=null;
+ Token tk2=null;
+} 
+{
+  termName=readScopedName() ( termBody=readTermArgs() )?
+  { 
+    if (termBody==null) { // atom  or name
+      return termName;
+    }else{
+      if (termName.isAtom()) {
+        retval = create(termName.getName(), termBody); 
+        retval=TermHelper.setAttribute(retval,"__FILE__",fname_);
+        retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",TermHelper.getAttribute(termName,"__BEGIN_LINE__"));
+        if (termBody.length!=0) {           
+           retval=TermHelper.setAttribute(retval,"__END_LINE__",TermHelper.getAttribute(termBody[termBody.length-1],"__END_LINE__"));
+        }else{
+          retval=TermHelper.setAttribute(retval,"__END_LINE__",TermHelper.getAttribute(termName,"__END_LINE__"));
+        }        
+        return retval;
+      }else{
+        throw new AssertException("Scoped name used as functional name");
+      }
+    }
+  }
+ |
+ retval=readPrimitive() 
+  { return retval; }
+ |
+ retval=readX()
+  { return retval; }
+ |
+ tk1="(" retval=readTerm() /*( <COMMA> t1=readTerm() )**/ tk2=")"
+  { 
+    retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",tk1.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__END_LINE__",tk2.endLine+lineCorrection_);
+    return retval; 
+  }             
+ |
+  LOOKAHEAD(2)
+  tk1="{" t1=readTerm() [ t2=readPatternTail() ] tk2="}"
+  { if (t2==null) {
+      termBody=new Term[1];
+      termBody[0]=t1;
+      retval=createSet(termBody);
+    } else if (t2.getName().equals("Pattern")) {
+      retval=createSetPattern(t1,t2.getSubtermAt(0));   
+    }else{
+      termBody=new Term[t2.getArity()+1];
+      termBody[0]=t1;
+      for(int i=0; i<t2.getArity(); ++i){
+        termBody[i+1]=t2.getSubtermAt(i);
+      }
+      retval=createSet(termBody);
+    } 
+    retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",tk1.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__END_LINE__",tk2.endLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__LINE__",tk1.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__FILE__",fname_);
+    return retval;
+  }
+  |
+  LOOKAHEAD(2)
+  tk1="{" tk2="}"
+   { retval=createSet(new Term[0]); 
+     retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",tk1.beginLine+lineCorrection_);
+     retval=TermHelper.setAttribute(retval,"__END_LINE__",tk2.endLine+lineCorrection_);
+     retval=TermHelper.setAttribute(retval,"__LINE__",tk1.beginLine+lineCorrection_);
+     retval=TermHelper.setAttribute(retval,"__FILE__",fname_);
+     return retval;
+   }
+ |
+  LOOKAHEAD(2)
+  tk1="[" t1=readTerm() [t2=readPatternTail() ] tk2="]"
+  { if (t2==null) {
+      termBody=new Term[1];
+      termBody[0]=t1;
+      retval=createList(termBody);
+    } else if (t2.getName().equals("Pattern")) {
+      termBody=new Term[2];
+      termBody[0]=t1;
+      termBody[1]=t2.getSubtermAt(0);
+      retval=create("cons",termBody);
+    }else{
+      termBody=new Term[t2.getArity()+1];
+      termBody[0]=t1;
+      for(int i=0; i<t2.getArity(); ++i){
+        termBody[i+1]=t2.getSubtermAt(i);
+      }
+      retval=createList(termBody);
+    } 
+    retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",tk1.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__END_LINE__",tk2.endLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__LINE__",tk1.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__FILE__",fname_);
+    return retval;
+  }
+ |
+  LOOKAHEAD(2)
+  tk1="[" tk2="]"
+   { retval=TermWare.getInstance().getTermFactory().createNil(); 
+    retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",tk1.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__END_LINE__",tk2.endLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__LINE__",tk1.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__FILE__",fname_);
+    return retval;     
+   }
+}
+
+
+/**
+ * <code>
+ *  scoped_name : <IDENT> ( "::" <IDENT> ) *
+ * </code>
+ * <br>
+ * Example:
+ * <pre>
+ *   x
+ *   x::y
+ *   x::y::z
+ * </pre>
+ *
+ **/
+Term  readScopedName() throws TermWareException :
+{
+ Token tk1;
+ Token tk2;
+ Term t=null;                            
+ ArrayList<Term> v = null;                                  
+ int endLine=0;                   
+}
+{
+ tk1=<IDENT> ( (<TWO_TWO_DOTS> tk2=<IDENT>)
+               { if (v==null) v=new ArrayList<Term>();
+                 v.add(TermWare.getInstance().getTermFactory().createAtom(tk2.image)); 
+                 endLine=tk2.endLine+lineCorrection_;
+               }                                 
+             )*
+ {
+  Term retval;
+  if (v==null) {
+    retval=TermWare.getInstance().getTermFactory().createAtom(tk1.image);
+    retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",tk1.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__END_LINE__",tk1.endLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__LINE__",tk1.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__FILE__",fname_);    
+  } else {                                         
+    Term[] nameBody = new Term[v.size()+1];
+    nameBody[0]=TermWare.getInstance().getTermFactory().createAtom(tk1.image);
+    for(int i=0; i<v.size(); ++i) {
+      nameBody[i+1]=v.get(i);
+    }
+    retval=create("_name",nameBody);
+    retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",tk1.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__END_LINE__",endLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__LINE__",tk1.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__FILE__",fname_);    
+  }
+  return retval;
+ }
+}
+
+
+/**
+ *<pre>
+ * set_tail : ":" term
+ *           |
+ *             "," term_comma_list
+ *</pre>
+ *
+ *@see TermReader#readTerm
+ *@see TermReader#readTermCommaList
+ **/                                                 
+Term  readPatternTail()  throws TermWareException : 
+{
+ Term[] termBody=null;
+ Term   t=null;
+ Token  tk;
+ Term retval;
+}
+{
+ tk=<TWO_DOTS> t=readTerm()
+   {     
+     retval=create("Pattern",t); 
+     retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",tk.beginLine+lineCorrection_);
+     retval=TermHelper.setAttribute(retval,"__END_LINE__",TermHelper.getAttribute(t,"__END_LINE__"));
+     retval=TermHelper.setAttribute(retval,"__LINE__",tk.beginLine+lineCorrection_);
+     retval=TermHelper.setAttribute(retval,"__FILE__",fname_);    
+     return retval;
+   }
+ |
+ tk=<COMMA> termBody=readTermCommaList()
+   { 
+     retval=create("CommaList",termBody); 
+     retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",tk.beginLine+lineCorrection_);
+     if(termBody.length > 0) {
+       retval=TermHelper.setAttribute(retval,"__END_LINE__",TermHelper.getAttribute(termBody[termBody.length-1],"__END_LINE__"));
+     }else{
+       retval=TermHelper.setAttribute(retval,"__END_LINE__",tk.endLine+lineCorrection_);
+     }
+     retval=TermHelper.setAttribute(retval,"__LINE__",tk.beginLine+lineCorrection_);
+     retval=TermHelper.setAttribute(retval,"__FILE__",fname_);    
+     return retval;
+   }
+}
+
+/**
+ *<code> x : <X_LITERAL> </code> <br>
+ * where <code> <X_LITERAL> </code>  
+ * id described by next pattern:
+ * <pre>
+ * X_LITERAL : "$" (["0"-"9"]|["a"-"z"]|["A"-"Z"]|"_")+ 
+ * </pre>
+ *<br>
+ *Example:
+ *<pre>
+ *  $x
+ *  $myVariable
+ *</pre>
+ */
+Term readX()  throws TermWareException:
+{
+ Token t;
+}
+{
+ t=<X_LITERAL>
+ { lazyInitXStringIndex();  
+   Term retval=TermWare.getInstance().getTermFactory().createX(xStringIndex.getIndex(t.image.substring(1)));
+   retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",t.beginLine+lineCorrection_);
+   retval=TermHelper.setAttribute(retval,"__END_LINE__",t.endLine+lineCorrection_);
+   retval=TermHelper.setAttribute(retval,"__LINE__",t.beginLine+lineCorrection_);
+   retval=TermHelper.setAttribute(retval,"__FILE__",fname_);    
+   return retval;
+ }
+}
+
+/**
+ *<pre> 
+ *  term_args : "(" term_comma_list ")" 
+ *</pre>
+ *<br>
+ *@see TermReader#readTermCommaList
+ */
+Term[] readTermArgs() throws TermWareException :
+{
+ Term[] args;
+}
+{
+ "(" args=readTermCommaList() ")"
+  { return args; }
+}
+
+
+/**
+ *<code>
+ *  term_comma_list : [  term ( "," term )* ]
+ *</code>
+ *<br>
+ *
+ *@see TermReader#readTerm
+ **/
+Term[] readTermCommaList() throws TermWareException :
+{
+ ArrayList<Term> v=new ArrayList<Term>();
+ Term t1=null;
+ Term t2;
+}
+{
+  (t1=readTerm() ( <COMMA> t2=readTerm()
+                  { v.add(t2); } 
+                )* )? 
+ {
+  if (t1==null) return new Term[0];
+  Term[] retval = new Term[v.size()+1];
+  retval[0]=t1;
+  for(int i=0; i<v.size(); ++i) {
+    retval[i+1]=v.get(i);
+  }
+  return retval;
+ }
+}
+
+
+/**
+ *<pre>
+ * primitive: string | integer | double | boolean | nil
+ *</pre>
+ *<br>
+ *  
+ *@see TermReader#readString
+ *@see TermReader#readInteger
+ *@see TermReader#readDouble  
+ *@see TermReader#readBoolean
+ *@see TermReader#readNIL
+ **/     
+Term readPrimitive()  throws TermWareException :
+{
+ Term retval;
+}
+{
+ retval=readString()
+   { return retval; }
+ |
+ retval=readInteger()
+   { return retval; }
+ |
+ retval=readDouble()
+   { return retval; }
+ |
+ retval=readBoolean()
+   { return retval; }
+ |
+ retval=readNIL()
+   { return retval; }
+}
+
+/**
+ *<code> string: <STRING_LITERAL> </code>
+ *<br>
+ * where STRING_LITERAL described by next regular expression:
+ *<pre>
+ *  STRING_LITERAL : "\""
+ *  ( ( ~["\"","\\"])
+ *  | ("\\" (
+ *            ["n","t","v","b","r","f","\\","'","\""]
+ *           |
+ *            "0" (["0"-"7"])*
+ *           |
+ *            ["1"-"9"] (["0"-"9"])*
+ *           |
+ *            ("0x" | "0X") (["0"-"9","a"-"f","A"-"F"])+
+ *          )
+ *    )
+ *  )*
+ *  "\"" 
+ *</pre>
+ * i. e. "C-like" string.
+ **/
+Term readString() throws TermWareException :
+{
+ Token t;
+} 
+{
+  t=<STRING_LITERAL>
+  { 
+    Term retval=TermWare.getInstance().getTermFactory().createString(TermReaderUtils.token2String(t.image)); 
+    retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",t.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__END_LINE__",t.endLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__LINE__",t.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__FILE__",fname_);    
+    return retval;
+  } 
+}
+
+/**
+ *<code>
+ * integer : <INTEGER_LITERAL>
+ *<code>
+ *<br>
+ *<code>
+ * INTEGER_LITERAL: (["0"-"9"])+("L"|"B")?
+ *</code> 
+ **/
+Term readInteger() throws TermWareException:
+{
+ Token t;
+}
+{
+ t=<INTEGER_LITERAL>
+ {
+   Term retval=null;
+   if (t.image.endsWith("B")) {
+      //BigInteger  
+      String s = t.image.substring(0,t.image.length()-1); 
+      try {   
+        BigInteger bi=new BigInteger(s);
+        retval=TermWare.getInstance().getTermFactory().createBigInteger(bi); 
+      }catch(NumberFormatException ex){
+        throw new TermParseException("Can't parse "+s+" to big integer",ex);
+      }
+   } else if (t.image.endsWith("L")) {
+      // Long
+      String s = t.image.substring(0,t.image.length()-1); 
+      long l = 0;
+      try {
+        l=Long.parseLong(s);
+      }catch(NumberFormatException ex){
+        throw new TermParseException("Can't parse "+s+" to long",ex);
+      }
+      retval=TermWare.getInstance().getTermFactory().createLong(l); 
+   } else {
+      int x=0;
+      try {
+         x=Integer.parseInt(t.image,10);
+      }catch(NumberFormatException ex){        
+          throw new TermParseException("Can't parse "+t.image+" to int",ex);
+      }
+      retval=TermWare.getInstance().getTermFactory().createInt(x); 
+   }
+   retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",t.beginLine+lineCorrection_);
+   retval=TermHelper.setAttribute(retval,"__END_LINE__",t.endLine+lineCorrection_);
+   retval=TermHelper.setAttribute(retval,"__LINE__",t.beginLine+lineCorrection_);
+   retval=TermHelper.setAttribute(retval,"__FILE__",fname_);    
+   return retval;
+  }
+}
+
+
+/**
+ *<code>
+ * double : <DOUBLE_LITERAL>
+ *</code>
+ *<br>
+ **/
+Term readDouble() throws TermWareException:
+{
+ Token t;
+}
+{
+ t=<DOUBLE_LITERAL>
+ { 
+   Term retval=null;
+   if (t.image.endsWith("B")) {
+     String s = t.image.substring(0,t.image.length()-1);
+     try {
+       BigDecimal bd = new BigDecimal(s);
+       retval=TermWare.getInstance().getTermFactory().createBigDecimal(bd); 
+     }catch(NumberFormatException ex){
+       throw new TermParseException("Can't parse "+t.image+" as big decimal",ex);   
+     }
+   }else if (t.image.endsWith("F")) {
+     float x=0.0F;
+     try {
+       x=Float.parseFloat(t.image);
+     }catch(NumberFormatException ex){
+       throw new TermParseException("Can't parse "+t.image+" as float",ex);   
+     }
+     retval=TermWare.getInstance().getTermFactory().createFloat(x); 
+   }else{
+     double x=0.0;
+     try {
+       x=Double.parseDouble(t.image);
+     }catch(NumberFormatException ex){
+       throw new TermParseException("Can't parse "+t.image+" as double",ex);   
+     }
+     retval=TermWare.getInstance().getTermFactory().createDouble(x); 
+   }   
+   retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",t.beginLine+lineCorrection_);
+   retval=TermHelper.setAttribute(retval,"__END_LINE__",t.endLine+lineCorrection_);
+   retval=TermHelper.setAttribute(retval,"__LINE__",t.beginLine+lineCorrection_);
+   retval=TermHelper.setAttribute(retval,"__FILE__",fname_);    
+   return retval;
+ }
+}
+
+
+
+/**
+ * <code>
+ * boolean: "true" | "false"
+ * </code>
+ **/
+Term readBoolean() throws TermWareException:
+{
+ Term retval;
+ Token t;
+}
+{
+ (
+  t=<TRUE>
+    { retval=TermWare.getInstance().getTermFactory().createBoolean(true); }
+  |
+  t=<FALSE>
+    { retval=TermWare.getInstance().getTermFactory().createBoolean(false); }
+  )
+  { 
+   retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",t.beginLine+lineCorrection_);
+   retval=TermHelper.setAttribute(retval,"__END_LINE__",t.endLine+lineCorrection_);
+   retval=TermHelper.setAttribute(retval,"__LINE__",t.beginLine+lineCorrection_);
+   retval=TermHelper.setAttribute(retval,"__FILE__",fname_);    
+   return retval;
+  }
+}
+
+/**
+ *<code>
+ * nil: "NIL"
+ *</code>
+ */
+Term readNIL() throws TermWareException:
+{
+ Token t;
+}
+{
+ t=<NIL>  
+  { 
+    Term retval=TermWare.getInstance().getTermFactory().createNIL(); 
+    retval=TermHelper.setAttribute(retval,"__BEGIN_LINE__",t.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__END_LINE__",t.endLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__LINE__",t.beginLine+lineCorrection_);
+    retval=TermHelper.setAttribute(retval,"__FILE__",fname_);    
+    return retval;
+  }
+}
+
+
+TOKEN:
+{
+  <TRUE: "true" >
+  |
+  <FALSE: "false" >
+} 
+
+TOKEN:
+{
+ <  INTEGER_LITERAL: (["0"-"9"])+(["L","B"])? >
+ |
+ <  STRING_LITERAL : "\""
+   ( ( ~["\"","\\"])                         // ,"\n","\r"
+   | ("\\" (
+             ["n","t","v","b","r","f","\\","'","\""]
+            |
+             "0" (["0"-"7"])*
+            |
+             ["1"-"9"] (["0"-"9"])*
+            |
+             ("0x" | "0X") (["0"-"9","a"-"f","A"-"F"])+
+           )
+     )
+   )*
+   "\"" >
+ |
+ < DOUBLE_LITERAL : (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D","B"])?
+                   |
+                    "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D","B"])?
+                   |
+                    (["0"-"9"])+ (<EXPONENT>) (["f","F","d","D","B"])?
+                   |
+                    (["0"-"9"])+ (["f","F","d","D","B"])
+ >
+ |
+ < #EXPONENT : ["e","E"]  (["+","-"])? (["0"-"9"])+ >
+ |
+ < NIL : "NIL" >
+ |
+ < IN : "in" >
+ |
+ < IDENT : (["a"-"z"]|["A"-"Z"]|"_"|"@")(["a"-"z"]|["A"-"Z"]|["0"-"9"]|"_"|"@")* >
+ |
+ < X_LITERAL : "$" (["0"-"9"]|["a"-"z"]|["A"-"Z"]|"_")+ >
+ |
+ < LEFT_ARROW : "->" >
+ |
+ < LOGICAL_OR : "||" >
+ |
+ < LOGICAL_AND : "&&" >
+ |
+ < BIT_OR : "|" >
+ |
+ < BIT_AND : "&" >
+ |
+ < EQ : "==" >
+ |
+ < NEQ : "!=" >
+ |
+ < LESS : "<" >
+ |
+ < GREATER : ">" >
+ |
+ < LESS_EQ : "<=" >
+ |
+ < GREATER_EQ : ">=" >
+ |
+ < EQ_GREATER : "=>" >
+ |
+ < LEFT_SHIFT : "<<" >
+ |
+ < RIGHT_SHIFT : ">>" >
+ |                                    
+ < PLUS : "+" >
+ |
+ < MINUS : "-" >
+ |
+ < MULTIPLY : "*" >
+ |
+ < DIVIDE : "/" >
+ |
+ < TWO_DIVIDE : "//" >
+ |
+ < MOD : "%" >
+ |
+ < LOGICAL_NOT : "!" >
+ |
+ < BIT_NEGATE : "~" >
+ |
+ < DOT : "." > 
+ |
+ < TWO_DOTS : ":" >
+ |
+ < COMMA : "," >
+ |
+ < QUESTION : "?" >
+ |
+ < TWO_TWO_DOTS: "::" >
+ |
+ < ARGS_DOTS: ".." >
+ |
+ < NAMPERSAND: "#@" >
+}

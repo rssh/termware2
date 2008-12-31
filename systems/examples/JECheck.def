@@ -1,0 +1,18 @@
+
+#
+# This system check empty catch clause in Java source code.
+#
+
+domain(examples,
+  system(JECheck,javaFacts(JECheckDB,"ua.kiev.gradsoft.TermWareDemos.jsa.JECheckFacts"),
+    ruleset(
+
+      java_catch($formal_parameter, java_empty_block ) -> PROBLEM 
+                                                 [ foundProblem("empty cath statement") ]
+      
+     # java_catch($formal_parameter, java_empty_statement ) -> PROBLEM [ foundProblem("empty catch block") ]
+
+    ),
+    BottomUp
+) );
+

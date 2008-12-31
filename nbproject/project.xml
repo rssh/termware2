@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.ant.freeform</type>
+    <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <!-- Do not use Project Properties customizer when editing this file manually. -->
+            <name>TermWare</name>
+            <properties/>
+            <folders>
+                <source-folder>
+                    <label>jsrc-core</label>
+                    <type>java</type>
+                    <location>jsrc-core</location>
+                </source-folder>
+                <source-folder>
+                    <label>jtests</label>
+                    <type>java</type>
+                    <location>jtests</location>
+                </source-folder>
+                <source-folder>
+                    <label>jsrc-jsr94</label>
+                    <type>java</type>
+                    <location>jsrc-jsr94</location>
+                </source-folder>
+                <source-folder>
+                    <label>jtests-jsr94</label>
+                    <type>java</type>
+                    <location>jtests-jsr94</location>
+                </source-folder>
+                <source-folder>
+                    <label>jdemos</label>
+                    <type>java</type>
+                    <location>jdemos</location>
+                </source-folder>
+            </folders>
+            <ide-actions>
+                <action name="build">
+                    <target>build</target>
+                </action>
+                <action name="clean">
+                    <target>clean</target>
+                </action>
+                <action name="javadoc">
+                    <target>docs</target>
+                </action>
+                <action name="test">
+                    <target>test</target>
+                </action>
+                <action name="rebuild">
+                    <target>clean</target>
+                    <target>build</target>
+                </action>
+            </ide-actions>
+            <view>
+                <items>
+                    <source-folder style="packages">
+                        <label>jsrc-core</label>
+                        <location>jsrc-core</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>jtests</label>
+                        <location>jtests</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>jsrc-jsr94</label>
+                        <location>jsrc-jsr94</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>jtests-jsr94</label>
+                        <location>jtests-jsr94</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>jdemos</label>
+                        <location>jdemos</location>
+                    </source-folder>
+                    <source-file>
+                        <location>build.xml</location>
+                    </source-file>
+                </items>
+                <context-menu>
+                    <ide-action name="build"/>
+                    <ide-action name="clean"/>
+                    <ide-action name="javadoc"/>
+                    <ide-action name="test"/>
+                    <ide-action name="rebuild"/>
+                </context-menu>
+            </view>
+            <subprojects/>
+        </general-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
+            <compilation-unit>
+                <package-root>jsrc-core</package-root>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>jtests</package-root>
+                <unit-tests/>
+                <classpath mode="compile">lib/junit.jar:jsrc-core:lib/TermWare-2.3.1.jar</classpath>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>jsrc-jsr94</package-root>
+                <classpath mode="compile">lib/jsr94.jar</classpath>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>jtests-jsr94</package-root>
+                <unit-tests/>
+                <classpath mode="compile">lib/jsr94.jar;lib/junit.jar</classpath>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>jdemos</package-root>
+                <classpath mode="compile">lib/TermWare-2.3.1.jar</classpath>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+        </java-data>
+    </configuration>
+</project>

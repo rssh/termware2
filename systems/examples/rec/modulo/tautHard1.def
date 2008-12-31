@@ -1,0 +1,114 @@
+#
+# part of rewrite engines competition
+#
+#
+
+domain(examples,
+ domain(rec,
+  domain(modulo,
+    #@option(reduceInFacts(false))
+    #--@option(loggedEntity(All))
+    #--@option(loggedEntity(SystemReductions,StrategyReductions))
+    #--@option(loggedEntity(SystemReductions))
+    system(tautHard1,default, 
+     ruleset(
+       import(general,reduce),
+
+       and($P, tt) -> $P,
+       and(tt, $P) -> $P,
+       and($P, ff) -> ff,
+       and(ff, $P) -> ff,
+       and($P, $P) -> $P,
+       xor($P, ff) -> $P,
+       xor(ff, $P) -> $P,
+       xor($P, $P) -> ff,
+
+       ## next two rules are added.
+       and($P, xor(ff, $R)) -> and($P,$R),
+       and($P, xor($R, ff)) -> and($P,$R),
+
+       and($P, xor($Q, $R)) -> xor(and($P1, $Q1), and($P1, $R1))
+                                where (
+                                        $P1 <- $P, 
+                                        $Q1 <- $Q, 
+                                        $R1 <- $R
+                                      )
+                              ,
+
+       ## and commutatuve stuff added.
+       and(xor(ff, $R),$P) -> and($R,$P),
+       and(xor($R, ff),$P) -> and($R,$P),
+       and(xor($Q, $R),$P) -> xor(and($P1, $Q), and($P1, $R)) 
+                                 where ($P1 <- $P),
+       not($P) -> xor($P, tt),
+       or($P, $Q) -> xor(and($P1, $Q1), xor($P1, $Q1)) 
+           where ($P1 <- $P, $Q1 <- $Q),
+       implies($P, $Q) -> not(xor($P1, and($P1, $Q))) 
+            where ($P1 <- reduce($P)),
+       iff($P, $Q) -> not(xor($P, $Q)),
+
+       and(and($x,$y),$z) -> and(reduce($x),and($y,$z)),
+       xor(xor($x,$y),$z) -> xor($x,xor($y,$z)),
+
+       simpl(and($P, tt)) -> simpl($P),
+       simpl(and(tt, $P)) -> simpl($P),
+       simpl(and(ff,$P)) -> ff,
+       simpl(and($P,ff)) -> simpl($P),
+       simpl(and($x,$y)) -> and(simpl($x),simpl($y)),
+       simpl(xor($P,ff)) -> simpl($P),
+       simpl(xor(ff,$P)) -> simpl($P),
+       simpl(xor($P, $P)) -> ff,
+       simpl(xor($X, $Y)) -> xor(simpl($X),simpl($Y)),
+       simpl(not($P)) -> xor(simpl($P), tt),
+       simpl(or($P, $Q)) -> simpl(xor(and($P1, $Q1), xor($P1, $Q1)))
+                                 where ($P1 <- $P, $Q1 <- $Q),
+       simpl(implies($P, $Q)) -> simpl(not(xor($P1, and($P1, $Q)))) 
+            where ($P1 <- reduce(simpl($P))),
+       simpl(iff($P, $Q)) -> simpl(not(xor($P, $Q))),
+
+       simpl($X) -> $X,
+       simpl(and(and($x,$y),$z)) -> and(simpl($x),and(simpl($y),simpl($z))),
+
+      P($x) -> $x [ println($x) ],
+
+ #get normal form for:
+ T1->
+    implies(and(iff(iff(or(a1, a2), or(not(a3), iff(xor(a4, a5),
+    not(not(not(a6)))))), not(and(and(a7, a8), not(xor(xor(or(a9, and(a10,
+    a11)), a2), and(and(a11, xor(a2, iff(a5, a5))), xor(xor(a7, a7),
+    iff(a9, a4)))))))), implies(iff(iff(or(a1, a2), or(not(a3),
+    iff(xor(a4, a5), not(not(not(a6)))))), not(and(and(a7, a8),
+    not(xor(xor(or(a9, and(a10, a11)), a2), and(and(a11, xor(a2, iff(a5,
+    a5))), xor(xor(a7, a7), iff(a9, a4)))))))), not(and(implies(and(a1,
+    a2), not(xor(or(or(xor(implies(and(a3, a4), implies(a5, a6)), or(a7,
+    a8)), xor(iff(a9, a10), a11)), xor(xor(a2, a2), a7)), iff(or(a4, a9),
+    xor(not(a6), a6))))), not(iff(not(a11), not(a9))))))),
+    not(and(implies(and(a1, a2), not(xor(or(or(xor(implies(and(a3, a4),
+    implies(a5, a6)), or(a7, a8)), xor(iff(a9, a10), a11)), xor(xor(a2,
+    a2), a7)), iff(or(a4, a9), xor(not(a6), a6))))), not(iff(not(a11),
+    not(a9))))))
+    ,
+
+ T2->
+    implies(and(not(and(xor(a1, xor(or(a2, a3), a4)), xor(iff(xor(not(a5),
+    or(xor(iff(a6, a7), iff(a8, a9)), and(a10, a9))), iff(not(not(a2)),
+    implies(or(a9, a6), or(a10, a5)))), not(or(a9, implies(not(a8), or(a4,
+    a9))))))), implies(not(and(xor(a1, xor(or(a2, a3), a4)),
+    xor(iff(xor(not(a5), or(xor(iff(a6, a7), iff(a8, a9)), and(a10, a9))),
+    iff(not(not(a2)), implies(or(a9, a6), or(a10, a5)))), not(or(a9,
+    implies(not(a8), or(a4, a9))))))), not(implies(implies(and(or(a1,
+    xor(xor(a2, a3), not(a4))), not(xor(a5, and(a6, a7)))),
+    implies(xor(implies(a8, a9), a10), xor(and(a4, or(a4, a1)), a2))),
+    or(or(xor(or(a4, a7), a2), and(a8, a1)), not(not(not(a6)))))))),
+    not(implies(implies(and(or(a1, xor(xor(a2, a3), not(a4))), not(xor(a5,
+    and(a6, a7)))), implies(xor(implies(a8, a9), a10), xor(and(a4, or(a4,
+    a1)), a2))), or(or(xor(or(a4, a7), a2), and(a8, a1)),
+    not(not(not(a6)))))))
+
+
+
+     ), FirstTop
+    )
+  )
+ )
+);

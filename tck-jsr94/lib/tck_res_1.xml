@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/*
+ * J A V A  C O M M U N I T Y  P R O C E S S
+ *
+ * J S R  9 4
+ *
+ * Test Compatability Kit
+ *
+ */
+The definition of a RuleExecutionSet is not within the scope of the JSR 94. 
+The implementation given in this file is written for the reference 
+implementation. A rule engine vendor verifying their rule engine should 
+modify this file to their specific needs.
+
+This RuleExecutionSet will be invoked by the TCK in a stateless manner.
+
+The rule execution set must have support for the following business object 
+model:
+-	Customer Class.
+The Customer business object is a simple business object that contains a 
+name and credit limit property. The definition of this class can be found in 
+org.jcp.jsr94.tck.model.Customer
+-	Invoice Class.
+The Invoice business object is a simple business object that contains a 
+description, amount, and status property. The definition of this class 
+can be found in org.jcp.jsr94.tck.model.Invoice
+
+The rule execution set has the following definition:
+-	Support Customer and Invoice business objects.
+-	Defines 1 logical rule.
+Rule1:
+If the credit limit of the customer is greater than the amount of the 
+invoice and the status of the invoice is unpaid then 
+decrement the credit limit with the amount of the invoice and 
+set the status of the invoice to "paid".
+
+Note:
+Additional physical rules may be defined to accomplish the 
+requirements mentioned above.
+
+The rule execution set has the following semantics:
+Input: 
+-	A Customer with a credit limit of 5000.
+-	An Invoice with an amount of 2000.
+
+The rule execution should produce the following output:
+-	The credit limit of the customer is 3000
+-	The status of the invoice is paid.
+
+-->
+<[[CDATA[[
+ #
+ # Stateless RuleExecutionSet for the TCK for TermWare
+ #
+ system(RuleExecutionSet1,default,   ruleset(      #@name rule-1      [ @class($customer,"org.jcp.jsr94.tck.model.Customer"),         @class($invoice ,"org.jcp.jsr94.tcl.model.Invoice"),        $TAIL      ]                      [|                           $invoice.getStatus() == "inpaid" &&                          $customer.getCreditLimit() > $invoice.getAmount()                      |]                         -> [ $customer, $invoice, $TAIL ]                              //                         [                           $customer.setCreditLimit($customer.getCreditLimit() - $invoice.getAmount()),                          $invoice.setStatus("paid") ,                          print("The credit limit of the Customer is "),                          print($customer.getCreditLimit()),                          println(),                          print("The status of invoice is "),                          print($invoice.getStatus()),                          println()                        ]    ),FirstTop  )]]>                                                   

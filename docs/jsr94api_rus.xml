@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="KOI8-R"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" 
+                     "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"
+[
+<!ENTITY % MATHML.prefixed "INCLUDE">
+<!ENTITY % MATHML.prefix "mml">
+<!ENTITY % equation.content "(alt?, (graphic+|mediaobject+|mml:math))">
+<!ENTITY % inlineequation.content 
+                "(alt?, (graphic+|inlinemediaobject+|mml:math))">
+<!--                
+<!ENTITY % mathml PUBLIC "-//W3C//DTD MathML 2.0//EN"
+        "http://www.w3.org/TR/MathML2/dtd/mathml2.dtd">
+%mathml;
+-->
+<!-- in practice - MathML does not work here yet,
+                   let's wait few years.
+         we will avoid using MathML in this document.
+-->
+]>
+<article>
+  <artheader>
+  <title>TermWare - JSR94 API </title>
+  <author>
+      <firstname>Руслан</firstname>
+      <surname>Шевченко</surname>
+    </author>
+  </artheader>
+  <abstract>
+    <para> В эHTHом докуменHTHе описываеHTHсQQQQ реализациQQQQ сHTHандарHTHа JSR-94 в  TermWare.
+   <itemizedlist>
+        <listitem>
+          <ulink url="www.jcp.org/jsr94"> <citetitle> JSR-94 </citetitle> </ulink>
+        </listitem>
+        <listitem>
+          <simpara>
+          <ulink url="../docs/TAPI/index.html">  <citetitle>  </citetitle> </ulink>
+        </simpara>
+        </listitem>
+        <listitem>
+          <simpara>
+          <ulink url="../docs/Semantics_rus/Semantics_rus.html">  <citetitle> ОпиAание AеманHTHики </citetitle> </ulink>
+        </simpara>
+        </listitem>
+      </itemizedlist>
+   </para>
+  </abstract>
+  <sect1>
+    <title>ФормаHTH XML-предсHTHавлениQQQQ спецификаций переписывающих сисHTHем</title>
+    <para>      
+    </para>
+    <sect2>
+      <title> ВарианHTHы формаHTHов - несколько примеров </title>
+      <sect3> 
+       <title> ФормаHTH 1 - просHTHой несHTHрукHTHированный HTHексHTH </title>
+       <para>
+         Самый просHTHой формаHTH XML предсHTHавлениQQQQ - эHTHо просHTHо всHTHроиHTHь его как HTHексHTHовый элеменHTH
+          в корневой элеменHTH. ИHTHак, корневой элеменHTH - TermWare: все, чHTHо находиHTHсQQQQ внуHTHри корневого 
+          элеменHTHа QQQQвлQQQQеHTHсQQQQ определениQQQQми на оригинальном QQQQзыке TermWare.
+       </para>
+       <para>
+         DTD выглQQQQдиHTH следующим образом:
+       </para>
+       <para>   
+<programlisting>
+<![CDATA[
+<!-- XML DTD -->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One root element - TermWare and text inside on -->
+<!ELEMENT termware-text (#PCDATA)>
+]]>
+</programlisting>
+       </para>
+ К примеру следующее определение:
+<programlisting>
+<![CDATA[
+
+  system(SemiGroup,default,
+         ruleset( ($x*$y)*$z -> $x*($y*$z) ),
+         FirstTop)
+);
+]]>
+</programlisting>
+ МожеHTH быHTHь выражено следующим образом:
+<programlisting><![CDATA[
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE termware-text PUBLIC
+	"-//GradSoft//DTD TermWare ruleset form 1//EN"
+	"http://www.gradsoft.ua/dtd/termware-1.dtd">
+<termware-text>
+<![CDATA[
+
+  system(SemiGroup,default,
+         ruleset( ($x*$y)*$z -> $x*($y*$z) ),
+         FirstTop)
+);
+]]>
+]]&gt;
+<![CDATA[
+</termware-text>
+]]>
+</programlisting>
+    </sect3>
+    <sect3>
+        <title> ФормаHTH два - XML элеменHTH длQQQQ набора правил </title>
+    <para>
+        Следующий формаHTH, коHTHорый иногда удобно применQQQQHTHь - выделиHTHь XML элеменHTHы длQQQQ доменов и длQQQQ сисHTHемы.
+       Домен содержиHTH в себе домен или другие сисHTHемы.
+       ИмQQQQ сисHTHемы, имQQQQ БД факHTHов и сHTHраHTHегии QQQQвлQQQQюHTHсQQQQ аHTHрибуHTHами элеменHTHа сисHTHемы, набор правил, разделенный запQQQQHTHыми -- содержимым.
+    </para>
+       <para>
+         DTD выглQQQQдиHTH следующим образом:
+       </para>
+       <para>   
+<programlisting>
+<![CDATA[
+<!-- XML DTD -->
+<?xml version="1.0" encoding="utf-8"?>
+<! -->
+
+<!ELEMENT termware domain>
+<!ELEMENT domain (domain* system-text*) >
+<!ATTLIST domain 
+     name   CDATA    #REQUIRED
+     id     NMTOKEN  #IMPLIED
+>
+<!ELEMENT system-text (#PCDATA) >
+<!ATTLIST system-text
+      name      CDATA  #REQUIRED,
+      facts     CDATA  #REQUIRED,
+      strategy  CDATA  #REQUIRED,
+      id     NMTOKEN  #IMPLIED
+>
+]]>
+</programlisting>
+       </para>
+    <simpara> Пример: </simpara>
+      <programlisting>
+<![CDATA[
+<termware>
+<domain name="examples" >
+ <system-text name="Life" strategy="FirstTop" facts="ua.gradsoft.termwaredemos.life.Life1Facts" >
+ <![CDATA[
+
+        #@display-name born-of-new-cell
+        { l($i,$j) : $T} [ n($i,$j) == 3 ] -> $T [ putCell($i,$j) ],
+
+        #@display-name static-cell
+        { l($i,$j) : $T} [ n($i,$j) == 2 ] -> $T [ existsCell($i,$j) ? putCell($i,$j) : removeCell($i,$j) ] ,
+
+        #@display-name die-of-cell
+        { l($i,$j) : $T} [ n($i,$j) > 3 || n($i,$j) < 2 ] -> $T [ removeCell($i,$j) ],
+
+
+        #@display-name empty-set
+        { } -> checkEmpty($T) [ showGeneration() , generateNextTestSet($T) ],
+
+        #@display-name check-empty-notnull
+        checkEmpty({$x:$Y}) -> { $x:$Y },
+
+        #@display-name check-empty-null
+        checkEmpty({}) -> END
+               
+ ]]>]]&gt;<![CDATA[
+ </system-text>
+</domain>
+ </termware>
+]]>
+</programlisting>
+    </sect3>
+    <sect3>
+        <title> ФормаHTH HTHри - XML элеменHTH длQQQQ набора правил </title>
+        Следующий уровень деHTHализации выделQQQQеHTHсQQQQ элеменHTH длQQQQ каждого правила.
+<programlisting>
+<![CDATA[
+<!-- XML DTD -->
+<?xml version="1.0" encoding="utf-8"?>
+<! -->
+
+<!ELEMENT termware domain>
+<!ELEMENT domain (domain* system*) >
+<!ATTLIST domain 
+     name   CDATA    #REQUIRED
+     id     ID       #IMPLIED
+>
+<!ELEMENT system (import-ruleset | rule-text)* >
+<!ATTLIST system
+      name      CDATA  #REQUIRED,
+      facts     CDATA  #REQUIRED,
+      strategy  CDATA  #REQUIRED,
+      id        ID     #IMPLIED
+>
+<!ELEMENT import-ruleset (#PCDATA) >
+<!ATTLIST import-ruleset
+  name        CDATA   #REQUIRED
+  id          ID      #IMPLIED
+>
+<!ELEMENT rule-text (#PCDATA) >
+<!ATTLIST rule-text
+  name CDATA  #IMPLIED
+  description PCDATA #IMPLIED
+  id          ID     #IMPLIED
+>
+]]>
+</programlisting>
+<simpara>
+ Предыдущий пример будеHTH выглQQQQдеHTHь следующим образом:
+</simpara>
+      <programlisting>
+<![CDATA[
+<domain name="examples" >
+ <system name="Life" strategy="FirstTop" facts="ua.gradsoft.termwaredemos.life.Life1Facts" >
+   
+  <rule-text description="born-of-new-cell>
+       <![CDATA[
+        { l($i,$j) : $T} [ n($i,$j) == 3 ] -> $T [ putCell($i,$j) ]
+       ]]>]]&gt;<![CDATA[ 
+  </rule-text>
+  <rule-text description="static cell">
+       <![CDATA[
+        { l($i,$j) : $T} [ n($i,$j) == 2 ] -> $T [ existsCell($i,$j) ? putCell($i,$j) : removeCell($i,$j) ] 
+       ]]>]]&gt;<![CDATA[
+   <rule-text description="die">    
+        <![CDATA[ 
+         { l($i,$j) : $T} [ n($i,$j) > 3 || n($i,$j) < 2 ] -> $T [ removeCell($i,$j) ]
+         ]]>]]&gt;<![CDATA[
+   </rule-text>     
+   <rule-text description="empty set">
+        <![CDATA[ 
+        { } -> checkEmpty($T) [ showGeneration() , generateNextTestSet($T) ],
+         ]]>]]&gt;<![CDATA[
+   </rule-text>     
+   <rule-text description="check-empty-notempty">
+        <![CDATA[ 
+        checkEmpty({$x:$Y}) -> { $x:$Y },
+        ]]>]]&gt;<![CDATA[
+   </rule-text>     
+   <rule-text description="check-empty-empty">
+       <![CDATA[ 
+        checkEmpty({}) -> END
+        ]]>]]&gt;<![CDATA[
+   </rule-text>                    
+ ]]>]]&gt;<![CDATA[
+ </system-text>
+</domain>
+]]>
+</programlisting>
+    </sect3>
+    </sect2>
+    <sect2>
+        <title> DTD и спецификациQQQQ аHTHрибуHTHов </title>
+<simpara>
+  ИHTHого, DTD будеHTH имеHTHь следующий вид:  
+</simpara>
+<programlisting>
+<![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : termware.dtd
+    Author     : Ruslan Shevchenko
+    Description:
+        DTD for XML representation of TermWare systems
+
+
+    PUBLIC ID  : -//GradSoft//DTD TermWare ruleset//EN
+    SYSTEM ID  : http://www.gradsoft.ua/termware/termware.dtd
+-->
+
+<!ELEMENT termware (domain*) >
+<!ELEMENT termware-text (#PCDATA) >
+<!ELEMENT domain (domain | system)*  >
+<!ATTLIST domain 
+     name   CDATA    #REQUIRED     
+     id     ID       #IMPLIED
+>
+<!ELEMENT system (import-ruleset | rule-text)* >
+<!ATTLIST system
+      name      CDATA  #REQUIRED
+      facts     CDATA  #REQUIRED
+      strategy  CDATA  #REQUIRED
+      id           ID     #IMPLIED
+      debug        CDATA  #IMPLIED
+      debug-entity CDATA  #IMPLIED
+      pass-via     CDATA  #IMPLIED
+>
+<!ELEMENT import-ruleset (#PCDATA) >
+<!ATTLIST import-ruleset
+  name        CDATA   #REQUIRED
+  id          ID      #IMPLIED
+>
+<!ELEMENT rule-text (#PCDATA) >
+<!ATTLIST rule-text
+  name CDATA         #IMPLIED
+  description CDATA  #IMPLIED
+  id          ID     #IMPLIED
+>
+]]>
+</programlisting>
+ <para>
+  Как мы видим, все довольно очевидно. НекоHTHорые особенносHTHи:
+        <itemizedlist> 
+         <listitem><simpara>
+             АHTHрибуHTHы элеменHTHа domain: 
+            <itemizedlist> 
+              <listitem><simpara>
+               name - имQQQQ домена. Специальное имQQQQ 'root' обозначаеHTH корневой домен.
+             </simpara></listitem>
+              <listitem><simpara>
+               id - id элеменHTHа. Никак не используеHTHсQQQQ в самой сисHTHеме переписывающих правил но можеHTH
+    быHTHь полезно длQQQQ предвариHTHельного преобразованиQQQQ и поиска в XML докуменHTHах, содержащих правилв.
+             </simpara></listitem>
+            </itemizedlist> 
+             Дочерние элеменHTHы domain: 
+            <itemizedlist> 
+              <listitem><simpara>
+               domain - имQQQQ поддомена. Таким образом домены создаюHTH иерархическую сHTHрукHTHуру.
+             </simpara></listitem>
+              <listitem><simpara>
+               system - описание сисHTHемы переписывающих правил.
+             </simpara></listitem>
+              <listitem><simpara>
+               system-text - описание сисHTHемы переписывающих правил в HTHексHTHовом виде.
+             </simpara></listitem>
+            </itemizedlist> 
+         </simpara></listitem>
+         <listitem><simpara>
+             АHTHрибуHTHы элеменHTHа 'system'
+              <itemizedlist> 
+               <listitem><simpara>
+                 name - имQQQQ сисHTHемы. ОбQQQQзаHTHельно.
+               </simpara></listitem>
+               <listitem><simpara>
+                 facts - ИмQQQQ базы факHTHов. (см. Описание семанHTHики). ОбQQQQзаHTHельно.
+               </simpara></listitem>
+               <listitem><simpara>
+                 strategy - ИмQQQQ сHTHраHTHегии (см. Описание семанHTHики). ОбQQQQзаHTHельно.
+               </simpara></listitem>
+               <listitem><simpara>
+                 id - id элеменHTHа.
+               </simpara></listitem>
+               <listitem><simpara>
+                 debug - булевское свойсHTHво, эквиваленHTHное вызову setDebugMode() после инициализации
+                 набора правил.
+               </simpara></listitem>
+               <listitem><simpara>
+                 debug-entity - сHTHрока, обозначающаQQQQ рамки оHTHладочного вывода. Обычно "All" либо 
+               полное имQQQQ оHTHлаживаемого класса. ИмееHTH смысл HTHолько при debug="true".
+               </simpara></listitem>
+               <listitem><simpara>
+                 pass-via - Если присуHTHсHTHвуеHTH, HTHо задаеHTH имQQQQ HTHерма, в коHTHором передаюHTHсQQQQ входные
+              объекHTHы в множесHTHво правил. По умолчанию сисHTHеме передаеHTHсQQQQ просHTHо список объекHTHов,
+              но эHTHо бываеHTH не очень удобно, HTHак как список слишком общаQQQQ форма. Если парамеHTH pass-via
+              усHTHановлен в имQQQQ <code> X </code>, HTHо при передаче в RuleExecutionSet объекHTHов,
+              к примеру, <code> a, b, c, d </code> сисHTHема получиHTH HTHерм X([a,b,c,d]).              
+               </simpara></listitem>
+            </itemizedlist>               
+             Дочерние элеменHTHы system 
+            <itemizedlist> 
+              <listitem><simpara>
+               import-ruleset - спецификациQQQQ импорHTHа набора правил из другой сисHTHемы.
+             </simpara></listitem>
+              <listitem><simpara>
+               rule-text - HTHексHTH переписывающего правила.
+             </simpara></listitem>
+            </itemizedlist> 
+         </simpara></listitem>
+         <listitem><simpara>
+             АHTHрибуHTHы элеменHTHа 'import-ruleset'
+              <itemizedlist> 
+               <listitem><simpara>
+                 name - имQQQQ сисHTHемы, оHTHкуда мы импорHTHируем правила.
+               </simpara></listitem>
+               <listitem><simpara>
+                 id - id элеменHTHа.
+               </simpara></listitem>
+              </itemizedlist> 
+            Дочерние элеменHTHы оHTHсуHTHсвуюHTH.
+         </simpara></listitem>
+         <listitem><simpara>
+            АHTHрибуHTHы элеменHTHа 'rule-text':
+              <itemizedlist> 
+               <listitem><simpara>
+                 name - имQQQQ правила. НеобQQQQзаHTHельно.
+               </simpara></listitem>
+               <listitem><simpara>
+                 description - описание правила.
+               </simpara></listitem>
+               <listitem><simpara>
+                 id - id элеменHTHа.
+               </simpara></listitem>
+              </itemizedlist> 
+          ВнуHTHри <code> rule-text </code> содержиHTHсQQQQ HTHексHTH переписывающих правил на QQQQзыке TermWare.
+         </simpara></listitem>
+         <listitem><simpara>
+            АHTHрибуHTHы элеменHTHа 'system-text' HTHакие-же, как и у 'system'
+         </simpara></listitem>
+        </itemizedlist> 
+ </para>   
+   </sect2>
+  </sect1>
+  <sect1>
+   <title> СвойсHTHва исполнQQQQемого множесHTHв правил</title>
+   <para>
+    Т. е. речь идеHTH о содержании парамеHTHра <code> properties </code> в меHTHодах createRuleSession.
+    <itemizedlist>
+      <listitem><simpara>
+         RoundingMode - режим округлениQQQQ при рабоHTHе с длинными десQQQQHTHичными числами.
+         Должен принимаHTHь одно из значений режима округлениQQQQ, определенное в <code>java.math.BigDecimal</code>
+      </simpara></listitem>
+      <listitem><simpara>
+         DecimalScale - HTHочносHTHь резульHTHаHTHа (HTH. е. количесHTHво значущих цифр после запQQQQHTHой) при делении десQQQQHTHичных чисел.
+      </simpara></listitem>
+    </itemizedlist> 
+   </para>
+  </sect1>
+  <sect1>
+   <title> Запуск HTHесHTHов из JSR-94 TCK </title>
+   <para>
+     Процедура запуска HTHесHTHов из JSR-94 выглQQQQдиHTH следующим образом:
+    <itemizedlist>
+      <listitem><simpara>
+         Необходимо загрузиHTHь и разархивироваHTHь JSR-94 Technology Compability Kit с сайHTHа jcp.
+      </simpara></listitem>
+      <listitem><simpara>
+         РазвернуHTHь дисHTHрибуHTHив TermWare и зайHTHи в подкаHTHалог jtests-jsr94.
+      </simpara></listitem>
+      <listitem><simpara>
+         В файле <filename> run_tck.xml </filename>  указаHTHь свойсHTHво <code> tckhome </code>
+      </simpara></listitem>
+      <listitem><simpara>
+         ЗапусHTHиHTHь в run_tck.xml цель run, командой <command>ant -f run_tck.xml run</command>
+      </simpara></listitem>
+      <listitem><simpara>
+         СисHTHема скопируеHTH tck в подкаHTHалог <filename> build </filename>, замениHTH HTHам файлы
+         <filename> tck.conf </filename>, <filename> tck_res1.xml </filename>, <filename> tck_res2.xml </filename>
+        на собсHTHвенные и запусHTHиHTH HTHесHTHы.  ЕсHTHесHTHвенно, вы эHTHо можеHTHе сделаHTHь и самосHTHоQQQQHTHельно.
+      </simpara></listitem>
+      <listitem><simpara>
+         После запуска HTHесHTHов в подкаHTHалоге <filename> build/reports </filename> можно найHTHи оHTHчеHTHы
+       о их выполнении.
+      </simpara></listitem>
+    </itemizedlist> 
+     
+   </para>
+  </sect1>
+
+</article>

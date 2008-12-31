@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/*
+ * J A V A  C O M M U N I T Y  P R O C E S S
+ *
+ * J S R  9 4
+ *
+ * Test Compatability Kit
+ *
+ */
+The definition of a RuleExecutionSet is not within the scope of the JSR 94. 
+The implementation given in this file is written for the reference 
+implementation. A rule engine vendor verifying their rule engine should 
+modify this file to their specific needs.
+
+
+This RuleExecutionSet will be invoked by the TCK in a stateful manner. 
+This rule execution set will first be invoked with one set of parameters, 
+process this input and keep the state of the execution. A subsequent 
+invocation will add additional information to the rule execution set 
+and the processing will involve both the newly provided information as 
+well as the processed information of the previous execution.
+
+The rule execution set must have support for the following business 
+object model:
+-	Customer Class.
+The Customer business object is a simple business object that contains a 
+name and credit limit property. The definition of this class can be found 
+in org.jcp.jsr94.tck.model.Customer
+-	Invoice Class.
+The Invoice business object is a simple business object that contains a 
+description, amount, and status property. The definition of this class 
+can be found in org.jcp.jsr94.tck.model.Invoice
+
+The rule execution set has the following definition:
+-	Support Invoice and Customer business object as input.
+-	Defines 1 logical rule.
+Rule1:
+If the credit limit of the customer is greater than the amount of the 
+invoice and the status of the invoice is unpaid then 
+decrement the credit limit with the amount of the invoice and 
+set the status of the invoice to "paid".
+
+Note:
+Additional physical rules may be defined to accomplish the 
+requirements mentioned above.
+
+The rule execution set has the following semantics:
+The first input to the rule execution set is: 
+-	A Customer with a credit limit of 5000.
+-	An Invoice with an amount of 2000.
+
+The rule execution should produce the following output:
+-	The credit limit of the customer is 3000
+-	The status of the invoice is paid.
+
+The second input to the rule execution set is:
+-	An Invoice with an amount of 1500.
+
+The rule execution should produce the following output:
+-	The credit limit of the customer is 1500
+-	The status of the invoices is paid.
+
+-->
+
+<termware>
+  <domain name="root">
+    <system name="RuleExecutionSet2" description="Stateful RuleExecutionSet for the TCK for TermWare" strategy="FirstTop" facts="default" pass-via="INPUT" debug="on" debug-entity="All" >
+     <rule-text description="first rule">
+
+         #If the credit limit of the customer is greater than the amount of the 
+         #invoice and the status of the invoice is unpaid then 
+         #decrement the credit limit with the amount of the invoice and 
+         #set the status of the invoice to "paid".
+         #
+
+        P( @class("org.jcp.jsr94.tck.model.Customer",$x),
+           @class("org.jcp.jsr94.tck.model.Invoice",$y) )
+                    [ $x.getCreditLimit() > $y.getAmount() &amp;&amp; $y.getStatus()=="unpaid" ]
+
+                     -&gt;
+
+               true
+             
+                    [ [$x.setCreditLimit($x.getCreditLimit() - $y.getAmount()),$y.setStatus("paid"),
+                      print("The credit limit of the customer is "),
+                      print($x.getCreditLimit()),println(),
+                      print("The status of the invoice is "),
+                      print($y.getStatus()),println()
+                    ] ]
+
+                    !-&gt;
+
+               true
+
+
+     </rule-text>
+
+
+     <rule-text description="accept-input">
+       INPUT($x) -> DO(CHECK(FIRST_CUSTOMER($x),INVOICES($x)),OUTPUT($x))
+     </rule-text>
+     <rule-text description="customers-non-empty">
+       FIRST_CUSTOMER([$x:$z]) [ $x.getClass().getName() == "org.jcp.jsr94.tck.model.Customer" ] -&gt; $x
+                                                                                                !-&gt; FIRST_CUSTOMER($z)
+                                                                    
+     </rule-text>
+     <rule-text description="customers-empty">
+       FIRST_CUSTOMERS([]) -&gt; []
+     </rule-text>
+     <rule-text description="invoices-non-empty">
+       INVOICES([$x:$z]) [ $x.getClass().getName() == "org.jcp.jsr94.tck.model.Invoice" ] -&gt; cons( $x, INVOICES($z) )
+                                                                                                !-&gt; INVOICES($z)
+                                                                    
+     </rule-text>
+     <rule-text description="invoices-empty">
+       INVOICES([]) -&gt; []
+     </rule-text>
+     <rule-text description="check for all invoices">
+       CHECK($x,[$z:$v])->P($x,$z) &amp;&amp; CHECK($x,$v)
+     </rule-text>
+     <rule-text description="check when we have not more invoices">
+       CHECK($x,[]) -&gt; true
+     </rule-text>
+     <rule-text description="leave output as is">
+       DO(true,OUTPUT($x)) -&gt; $x
+     </rule-text>
+     <rule-text description="reduce true">
+       true &amp;&amp; $x -&gt; $x
+     </rule-text>
+
+    </system>
+  </domain>
+</termware>
+
+

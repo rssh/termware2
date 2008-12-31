@@ -1,0 +1,27 @@
+
+
+domain(algebra,
+
+  system(Polynoms,default,
+         ruleset(
+           0*$x -> 0,
+           $x*0 -> 0,
+           0+$x -> $x,
+           $x+0 -> $x,
+           1*$x -> $x,
+           $x*1 -> $x,
+           $x+($y+$z)->($x+$y)+$z,
+           $x*($y*$z)->($x*$y)*$z,
+           $x - $y -> $x + (-1*$y),
+           $x - $x -> 0,
+           - $x -> (-1)*x,
+           $x*($y+$z) -> $x*$y+$x*$z,
+           ($x+$y)*$z -> $x*$z+$y*$z,
+           $y+$x [|term_less($x,$y)|] -> $x+$y,
+           $y*$x [|term_less($x,$y)|] -> $x*$y,
+           $x*$y + $z*$y [|isInt($z) && isInt($y)|] -> (eval($x+$z))*$y
+         ),
+         FirstTop
+        )
+
+);

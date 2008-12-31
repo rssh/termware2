@@ -1,0 +1,88 @@
+
+domain(examples,
+ system(Number2String,default,
+  ruleset(
+     import(general),
+
+     numberToString($x) -> p($x),
+
+     p(0) -> "zero",
+     p(1) -> "one",
+     p(2) -> "two",
+     p(3) -> "three",
+     p(4) -> "four",
+     p(5) -> "five",
+     p(6) -> "six",
+     p(7) -> "seven",
+     p(8) -> "eight",
+     p(9) -> "nine",
+     p(10) -> "ten",
+     p(11) -> "eleven",
+     p(12) -> "twelve",
+     p(13) -> "thirteen",
+     p(14) -> "fourteen",
+     p(15) -> "fifteen",
+     p(16) -> "sixteen",
+     p(17) -> "seventeen",
+     p(18) -> "eighteen",
+     p(19) -> "nineteen",
+     p($x) [ $x > 19 && $x < 100 ] ->   $x % 10 == 0 ? pd($x / 10) : 
+                                       l([pd($x/10),p($x % 10)])
+       |
+        [ $x >= 100 && $x < 1000 ] ->  
+                $tens == 0 ? 
+                      l([p($handreds),sIfNotOne($handreds,"handred")])
+                       :
+                      l([p($handreds),sIfNotOne($handreds, "handred"),p($tens)])
+                  where ( 
+                    $handreds <- $x/100, $tens <- $x % 100
+                  )
+       |
+        [ $x >= 1000 && $x < 1000000 ] -> 
+                   $handreds == 0 ?
+                        l([p($thousands),sIfNotOne($thousands,"thousand")])
+                                     :
+                        l([p($thousands),sIfNotOne($thousands,"thousand"),
+                                                                p($handreds)])
+                    where (
+                       $thousands <- $x/1000,
+                       $handreds <- $x % 1000
+                    )
+       |
+        [ $x >= 1000000 && $x <= 1000000000 ] ->
+                      $thousands == 0 ?
+                             l([p($millions),sIfNotOne($millions,"million")])
+                                   :
+                             l([p($millions),
+                                sIfNotOne($millions,"million"),p($thousands)])
+                      where (
+                       $millions <- $x/1000000,
+                       $thousands <- $x % 1000000
+                      )
+       |
+        [ $x > 100000000 ] -> l([ "number", "is", "too", "big" ]),
+
+       sIfNotOne(1,$x) -> $x,
+       sIfNotOne($x,$y) [ isNumber($x) ] -> String.concat($y,"s"),
+
+       pd(2) -> "twenty",
+       pd(3) -> "thirdy",
+       pd(4) -> "fourty",
+       pd(5) -> "fifty",
+       pd(6) -> "sixty",
+       pd(7) -> "seventy",
+       pd(8) -> "eighty",
+       pd(9) -> "ninty",
+                                    
+       l([$x:$y]) -> String.concat(reduce($x)," ",reduce(l($y))),
+       l([$x]) -> l($x),
+       l($x) -> $x,
+       l([]) -> ""
+
+  ),
+  FirstTop
+ )
+);
+
+
+  

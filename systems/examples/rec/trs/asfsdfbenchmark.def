@@ -1,0 +1,252 @@
+
+domain(examples,
+ domain(rec,
+  domain(trs,
+    #@option(reduceInFacts(false))
+    #--@option(loggedEntity(StrategyReductions))
+    system(asfsdfbenchmark,default, 
+     ruleset(
+       import(general,reduce),
+
+  # equations for boolean expressions
+
+  or(true, $x) -> true,
+  or(false,$x) -> $x,
+
+  and(true, $x) -> $x,
+  and(false, $x) -> $x,
+
+  neg(false) -> true,
+  neg(true)  -> false,
+
+
+  # toplevel benchmarks
+
+  benchevalsym17($Xs) -> equal(eval17(exexp(two, $Xs)), 
+                               evalsym17(exexp(two, $Xs))),
+
+  benchevalexp17($Xs) -> equal(eval17(exexp(two, $Xs)), 
+                               evalexp17(exexp(two, $Xs))),
+
+  benchevaltree17($Xs) -> equal(calctree17(eval($Xs)), 
+                          getval(buildtree(eval($Xs), zero))),
+
+  # equations for naturals modulo 17
+
+  equal($X, $X) -> true,
+  equal($X, $Y) -> eq1(reduce($X),reduce($Y)),
+
+  eq1($x,$x) -> true,
+  eq1($x,$y) -> false,
+
+  less(zero, $Y) -> true,
+  less(s($X), s($Y)) -> less($X, $Y),
+  less($X, $Y) -> false,
+
+  plus($X, zero) -> $X,
+  plus($X, s($Y)) -> s(plus($X, $Y)),
+
+  mult($X, zero) -> zero,
+  mult($X, s($Y)) -> plus(mult($X, $Y), $X),
+
+  exp($X, zero) -> s(zero),
+  exp($X, s($Y)) -> mult($X, exp($X, $Y)),
+
+  succ17(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(zero))))))))))))))))) -> zero,
+  succ17($X) -> s($X),
+
+  pred17(s($X)) -> $X,
+  pred17(zero) -> s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(zero)))))))))))))))),
+
+  plus17($X, zero) -> $X,
+  plus17($X, s($Y)) -> succ17(plus17($X, $Y)),
+
+  mult17($X, zero) -> zero,
+  mult17($X, s($Y)) -> plus17($X, mult17($X, $Y)),
+
+  exp17($X, zero) -> succ17(zero),
+  exp17($X, s($Y)) -> mult17($X, exp17($X, $Y)),
+
+  eval(exz) -> zero,
+  eval(exs($Xs)) -> s(eval($Xs)),
+  eval(explus($Xs, $Ys)) -> plus(eval($Xs), eval($Ys)),
+  eval(exmult($Xs, $Ys)) -> mult(eval($Xs), eval($Ys)),
+  eval(exexp($Xs, $Ys)) -> exp(eval($Xs), eval($Ys)),
+
+  eval17(exz) -> zero,
+  eval17(exs($Xs)) -> succ17(eval17($Xs)),
+  eval17(explus($Xs, $Ys)) -> plus17(eval17($Xs), eval17($Ys)),
+  eval17(exmult($Xs, $Ys)) -> mult17(eval17($Xs), eval17($Ys)),
+  eval17(exexp($Xs, $Ys)) -> exp17(eval17($Xs), eval($Ys)),
+
+
+  0 -> zero,
+  1 -> s(0),
+  2 -> s(1),
+  3 -> s(2),
+  4 -> s(3),
+  5 -> s(4),
+  6 -> s(5),
+  7 -> s(6),
+  8 -> s(7),
+  9 -> s(8),
+  10 -> s(9),
+  11 -> s(10),
+  12 -> s(11),
+  13 -> s(12),
+  14 -> s(13),
+  15 -> s(14),
+  16 -> s(15),
+  17 -> s(16),
+
+  evalsym17(exz) -> zero,
+  evalsym17(exs($Xs)) -> succ17(evalsym17($Xs)),
+  evalsym17(explus($Xs, $Ys)) -> plus17(evalsym17($Xs), evalsym17($Ys)),
+  evalsym17(exmult($Xs, exz)) -> zero,
+  evalsym17(exmult($Xs, exs($Ys))) -> evalsym17(explus(exmult($Xs, $Ys), $Xs)),
+  evalsym17(exmult($Xs, explus($Ys, $Zs))) -> evalsym17(explus(exmult($Xs, $Ys), exmult($Xs, $Zs))),
+  evalsym17(exmult($Xs, exmult($Ys, $Zs))) -> evalsym17(exmult(exmult($Xs, $Ys), $Zs)) ,
+  evalsym17(exmult($Xs, exexp($Ys, $Zs))) -> evalsym17(exmult($Xs, dec(exexp($Ys, $Zs)))),
+  evalsym17(exexp($Xs, exz)) -> succ17(zero),
+  evalsym17(exexp($Xs, exs($Ys))) -> evalsym17(exmult(exexp($Xs, $Ys), $Xs)),
+  evalsym17(exexp($Xs, explus($Ys, $Zs))) -> evalsym17(exmult(exexp($Xs, $Ys), exexp($Xs, $Zs))),
+  evalsym17(exexp($Xs, exmult($Ys, $Zs))) -> 
+                       evalsym17(exexp(exexp($Xs, $Ys), $Zs)),
+  evalsym17(exexp($Xs, exexp($Ys, $Zs))) -> 
+                evalsym17(exexp($Xs, dec(exexp($Ys, $Zs)))),
+
+  evalexp17($Xs) -> eval17(expand($Xs)),
+  eval17(exone) -> s(zero),
+
+  getval(leaf($Val)) -> $Val,
+  getval(node($Val, $Max, $Left, $Right)) -> $Val,
+
+  getmax(leaf($Val)) -> $Val,
+  getmax(node($Val, $Max, $Left, $Right)) -> $Max,
+
+  calctree17($X) -> mult17(exp17(s(s(zero)), pred17($X)), pred17(exp17(s(s(zero)), $X))),
+
+  # equations for SNat
+
+  one -> exs(exz),
+  two -> exs(one),
+  three -> exs(two),
+  four -> exs(three),
+  five -> exs(four),
+  six -> exs(five),
+  seven -> exs(six),
+  eight -> exs(seven),
+  nine -> exs(eight),
+  ten -> exs(nine),
+  eleven -> exs(ten),
+  twelve -> exs(eleven),
+  thirteen -> exs(twelve),
+  fourteen -> exs(thirteen),
+  fifteen -> exs(fourteen),
+  sixteen -> exs(fifteen),
+  seventeen -> exs(sixteen),
+  eighteen -> exs(seventeen),
+  nineteen -> exs(eighteen),
+  twenty -> exs(nineteen),
+  twentyone -> exs(twenty),
+  twentytwo -> exs(twentyone),
+  twentythree -> exs(twentytwo),
+  twentyfour -> exs(twentythree),
+  twentyfive -> exs(twentyfour),
+  twentysix -> exs(twentyfive),
+  twentyseven -> exs(twentysix),
+  twentyeight -> exs(twentyseven),
+  twentynine -> exs(twentyeight),
+  thirty -> exs(twentynine),
+  thirtyone -> exs(thirty),
+  thirtytwo -> exs(thirtyone),
+  thirtythree -> exs(thirtytwo),
+  thirtyfour -> exs(thirtythree),
+  thirtyfive -> exs(thirtyfour),
+
+  nat2sym(zero) -> exz,
+  nat2sym(s($X)) -> exs(nat2sym($X)),
+
+  expand(exz) -> exz,
+  expand(exone) -> exone,
+  expand(exs($Xs)) -> explus(exone, expand($Xs)),
+  expand(explus($Xs, $Ys)) -> explus(expand($Xs), expand($Ys)),
+  expand(exmult($Xs, exz)) -> exz,
+  expand(exmult($Xs, exone)) -> expand($Xs),
+  expand(exmult($Xs, explus($Ys, $Zs)))
+        -> expand(explus(exmult($Xs, $Ys), exmult($Xs, $Zs))),
+  expand(exmult($Xs, $Ys)) -> expand(exmult($Xs, expand($Ys))),
+  expand(exexp($Xs, exz)) -> exone,
+  expand(exexp($Xs, exone)) -> expand($Xs),
+  expand(exexp($Xs, explus($Ys, $Zs))) ->
+            expand(exmult(exexp($Xs, $Ys), exexp($Xs, $Zs))),
+  expand(exexp($Xs, $Ys)) -> expand(exexp($Xs, expand($Ys))),
+
+  # equations for trees
+
+  buildtree(zero, $Val) -> leaf($Val),
+
+  ###
+  # buildtree(s($X), $Y)
+  #  -> node(plus17(getval(buildtree($X,$Y)),
+  #                getval(buildtree($X, succ17(getmax(buildtree($X,$Y)))))),
+  #         getmax(buildtree($X, succ17(getmax(buildtree($X,$Y))))),
+  #         buildtree($X,$Y),
+  #         buildtree($X, succ17(getmax(buildtree($X,$Y)))))
+  #      where
+  #         ($prevtree <- buildtree($X,$Y)),
+
+  # elimination of common subexpressions:
+
+  buildtree(s($X), $Y) -> buildtree1(s($X),$Y,$prevtree)
+        where
+           ($prevtree <- buildtree($X,$Y)),
+
+  buildtree1(s($X),$Y,$prevtree)
+    -> node(plus17(getval($prevtree),
+                  getval($s17tree)),
+           getmax($s17tree),
+           $prevtree,
+           $st17tree)
+         where
+           ($s17tree <- buildtree($X,succ17(getmax($prevtree)))),
+
+
+
+  #  get normal form for:
+  # benchevalsym17(ten)
+  T1 -> benchevalsym17(ten),
+  T011 -> eval17(exexp(two, ten)), 
+  T012 ->  evalsym17(exexp(two, ten)),
+
+  #  get normal form for:
+  # benchevalsym17(twenty)
+  T2 ->benchevalsym17(twenty),
+  T021 -> eval17(exexp(two, twenty)), 
+  T022 ->  evalsym17(exexp(two, twenty)),
+
+  # get normal form for:
+  #  benchevalexp17(ten)
+  T3 -> benchevalexp17(ten),
+
+  # get normal form for:
+  #  benchevalexp17(ten)
+  T4 -> benchevalexp17(twenty),
+
+  # get normal form for:
+  # benchevaltree17(ten)
+  T5 -> benchevaltree17(ten),
+  T051 -> calctree17(eval(ten)), 
+  T052 -> getval(buildtree(eval(ten), zero)),
+
+  # get normal form for:
+  # benchevaltree17(twenty)
+  T6 -> benchevaltree17(twenty),
+
+     END -> X
+
+     ), BottomTop
+    )
+  )
+ )
+);

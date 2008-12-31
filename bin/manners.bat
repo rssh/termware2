@@ -1,0 +1,3 @@
+set INSTALL_PATH=$INSTALL_PATH
+#java  -Xrunhprof:cpu=samples,thread=y,lineno=y,format=a,depth=10   -Dtermware.path="%INSTALL_PATH%\systems" -cp "%INSTALL_PATH%\lib\TermWare2.jar";"%INSTALL_PATH%\lib\TermWareDemos.jar" ua.gradsoft.termwaredemos.benchmarks.manners.Manners1 %1 %2 %3 %4 %5 %6 %7 %8
+java  -Dtermware.path="%INSTALL_PATH%\systems" -cp "%INSTALL_PATH%\lib\TermWare2.jar";"%INSTALL_PATH%\lib\TermWareDemos.jar" ua.gradsoft.termwaredemos.benchmarks.manners.Manners1 %1 %2 %3 %4 %5 %6 %7 %8

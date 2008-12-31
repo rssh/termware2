@@ -1,0 +1,12 @@
+
+domain(algebra,
+
+  system(CommutativeGroup,default,
+         ruleset( 
+             import(Group),
+             $x * $y [| term_less($x,$y) |] -> $y*$x
+                ),
+         FirstTop)
+
+);
+       

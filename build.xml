@@ -1,0 +1,281 @@
+<?xml version="1.0"?>
+<!-- build file for TermWare project -->
+<project name="TermWare" default="build" basedir="." >
+
+<!-- proeprties -->
+
+<property file="build.properties" />
+
+<condition property="ivy.int.home" value="${ivy.home}" else="${user.home}/.ivy">
+  <isset property="ivy.home" />
+</condition>
+
+ <import file="build-ivy.xml" />
+
+
+<!--<property name="ivy.lib.dir" value="${ivy.int.home}/cache" />  -->
+  
+<!-- targets -->
+
+ <target name="clean">
+  <delete>
+   <fileset dir="jsrc-core"   includes="**/*.class" />
+   <fileset dir="jsrc-jsr94"  includes="**/*.class" />
+   <fileset dir="jdemos" includes="**/*.class" />
+   <fileset dir="jtests" includes="**/*.class" />
+  </delete>
+ </target>
+
+ <target name="clean-all" depends="clean">
+  <delete>
+   <fileset dir="jdocs"   includes="**/*" />
+  </delete>
+ </target>
+
+ <condition property="javacc.int.home" value="${javacchome}"
+     else="lib/build" >
+   <isset property="javacchome" />
+ </condition>
+ 
+
+ <target name="build-t-parser" depends="retrieve-javacc" >
+  <echo message="javacchome=${javacc.int.home}" />
+  <javacc  target="jsrc-core/ua/gradsoft/termware/parsers/terms/TermWare1.jj"
+           javacchome="${javacc.int.home}"
+  />
+ </target>
+ 
+ <target name="retrieve-javacc" depends="retrieve-for-build" />
+
+ <target name="build-parsers"
+         depends="build-t-parser">
+ </target>
+ 
+ <target name="build-classes" depends="build-parsers">
+  <javac srcdir="jsrc-core" includes="**/*.java" deprecation="on" debug="${debug}" >
+    <!--<compilerarg  line="-Xlint:unchecked" />-->
+  </javac>
+  <jar basedir="jsrc-core" includes="**/*.class,**/*.dtd,META-INF/**/*" 
+       destfile="lib/TermWare-${termware.version}.jar" 
+       index="true">
+  <include name="build"/>
+  <manifest>
+   <attribute name="Build-By" value="${user.name}"/>
+   <attribute name="Main-Class" value="ua.gradsoft.termware.CMDMain"/>
+   <attribute name="Extension-Name" value="TermWare" />
+   <attribute name="Specification-Vendor" value="GradSoft Ltd" />
+   <attribute name="Specification-Version" value="2.0" />
+   <attribute name="Implementation-Vendor-Id" value="ua.gradsoft" />
+   <attribute name="Implementation-Vendor" value="GradSoft Ltd" />
+   <attribute name="Implementation-Version" value="${termware.version}" />
+  </manifest>
+  </jar>
+ </target>
+
+ <target name="build-jsr94-classes"  depends="build-classes" >
+  <javac srcdir="jsrc-jsr94" includes="**/*.java" deprecation="on" debug="${debug}" >
+   <classpath>
+     <pathelement location="jsrc-jsr94" />
+     <pathelement location="lib/TermWare-${termware.version}.jar" />
+     <pathelement location="lib/jsr94.jar" />
+     <pathelement location="${java.class.path}" />
+   </classpath> 
+  </javac>
+  <jar basedir="jsrc-jsr94" includes="**/*.class" 
+       destfile="lib/TermWare2jsr94-${termware.version}.jar" 
+       index="true">
+  <include name="build"/>
+  <manifest>
+   <attribute name="Build-By" value="${user.name}"/>
+   <attribute name="Extension-Name" value="javax.rules.termware" />
+   <attribute name="Specification-Vendor" value="jcp.org" />
+   <attribute name="Specification-Version" value="1.0" />
+   <attribute name="Implementation-Vendor-Id" value="ua.gradsoft" />
+   <attribute name="Implementation-Vendor" value="GradSoft Ltd" />
+   <attribute name="Implementation-Version" value="2.0a" />
+  </manifest>
+  </jar>
+ </target>
+
+ 
+ 
+ <target name="build-demos"  depends="build-classes">
+  <javac srcdir="jdemos" includes="**/*.java" debug="${debug}" >
+    <classpath>
+      <pathelement location="jdemos"/>
+      <pathelement location="lib/TermWare-${termware.version}.jar"/>
+      <pathelement location="${java.class.path}/"/>      
+    </classpath>
+  </javac>
+  <jar basedir="jdemos" includes="**/*.class" 
+       destfile="lib/TermWareDemos-${termware.version}.jar" 
+       index="true">
+  <include name="build"/>
+  <manifest>
+   <attribute name="Build-By" value="${user-name}"/>
+  </manifest>
+  </jar>
+ </target>
+
+ <target name="build-tests"  depends="build-classes,retrieve-for-test">
+  <javac srcdir="jtests" includes="**/*.java" debug="${debug}" >
+    <classpath>
+      <pathelement location="jtests"/>
+      <pathelement location="lib/TermWare-${termware.version}.jar"/>
+      <pathelement location="lib/junit-3.8.jar"/>
+      <pathelement location="${java.class.path}/"/>      
+    </classpath>
+  </javac>
+  <jar basedir="jtests" includes="**/*.class" 
+       destfile="lib/TermWareTests-${termware.version}.jar" 
+       index="true">
+  <include name="build"/>
+  <manifest>
+   <attribute name="Build-By" value="${user-name}"/>
+  </manifest>
+  </jar>
+ </target>
+
+ <target name="run-old-tests" >
+   <java classname="ua.gradsoft.termwaretests.old.AllTests"
+        fork="true" failonerror="true" >
+      <classpath>
+      <pathelement location="jtests"/>
+      <pathelement location="lib/TermWare-${termware.version}.jar"/>
+      <pathelement location="${java.class.path}/"/>      
+    </classpath>
+    <sysproperty key="termware.path" value="systems" />
+   </java>
+ </target>
+ 
+ <target name="test" depends="build-tests" >
+   <java classname="ua.gradsoft.termwaretests.MainTestSuite"
+        fork="true" failonerror="true" >
+      <classpath>
+      <pathelement location="jtests"/>
+      <pathelement location="lib/TermWare-${termware.version}.jar"/>
+      <pathelement location="lib/TermWareDemos-${termware.version}.jar"/>
+      <pathelement location="lib/junit-3.8.jar"/>
+      <pathelement location="${java.class.path}/"/>      
+    </classpath>
+    <sysproperty key="termware.path" value="systems" />
+   </java>
+ </target>
+
+  <!-- special target to test inside netbeans -->
+  <target name="junit-tests" depends="build-tests" >      
+   <junit showoutput="true" fork="true" dir="." >
+      <formatter usefile="false" type="brief" />      
+      <test name="ua.gradsoft.termwaretests.MainTestSuite"/>
+      <classpath>
+      <pathelement location="jtests"/>
+      <pathelement location="lib/TermWare-${termware.version}.jar"/>
+      <pathelement location="lib/TermWareDemos-${termware.version}.jar"/>
+      <pathelement location="lib/junit.jar"/>
+      <pathelement location="${java.class.path}/"/>      
+     </classpath>
+    <sysproperty key="termware.path" value="systems" />
+   </junit>
+ </target>
+
+ 
+ <target name="build"  depends="build-parsers,build-classes,build-jsr94-classes,build-demos,build-tests">
+ </target>
+ <target name="api-docs">
+  <javadoc sourcepath="jsrc-core" destdir="jdocs"
+           packagenames="ua.gradsoft.termware,ua.gradsoft.termware.*"
+  >
+    <link href="http://java.sun.com/javase/6/docs/api/" />
+  </javadoc>
+ </target>
+
+ <target name="Semantics_rus">
+  <dependset>
+    <srcfilelist files="docs/Semantics_rus.tex" />
+    <targetfileset dir="docs/Semantics_rus/*" />
+  </dependset>
+  <exec executable="latex" dir="docs" >
+    <arg line="Semantics_rus.tex" />
+  </exec>
+  <exec executable="bibtex" dir="docs" >
+    <arg line="Semantics_rus" />
+  </exec>
+  <exec executable="htlatex" dir="docs" >
+    <arg line="Semantics_rus.tex" />
+  </exec>
+  <mkdir dir="docs/Semantics_rus" />
+  <move todir="docs/Semantics_rus">
+    <fileset dir="docs">
+      <include name="Semantics_rus*.png" />
+      <include name="op*.png" />
+      <include name="Semantics_rus.css" />
+      <include name="Semantics_rus.html" />
+      <include name="Semantics_rus*.html" />
+      <include name="Semantics_rus*.png" />
+    </fileset>
+  </move>    
+  <exec executable="latex" dir="docs" >
+    <arg line="Semantics_rus.tex" />
+  </exec>
+ </target>
+
+
+ <target name="Semantics_eng">
+  <dependset>
+    <srcfilelist files="docs/Semantics_eng.tex" />
+    <targetfileset dir="docs/Semantics_eng/*" />
+  </dependset>
+  <exec executable="latex" dir="docs" >
+    <arg line="Semantics_eng.tex" />
+  </exec>
+  <exec executable="bibtex" dir="docs" >
+    <arg line="Semantics_eng" />
+  </exec>
+  <exec executable="htlatex" dir="docs" >
+    <arg line="Semantics_eng.tex" />
+  </exec>
+  <mkdir dir="docs/Semantics_eng" />
+  <move todir="docs/Semantics_eng">
+    <fileset dir="docs">
+      <include name="Semantics_eng*.png" />
+      <include name="op*.png" />
+      <include name="Semantics_eng.css" />
+      <include name="Semantics_eng.html" />
+      <include name="Semantics_eng*.html" />
+      <include name="Semantics_eng*.png" />
+    </fileset>
+  </move>    
+  <exec executable="latex" dir="docs" >
+    <arg line="Semantics_eng.tex" />
+  </exec>
+ </target>
+
+
+ <target name="build-t-jjdoc">
+  <jjdoc  target="jsrc-core/ua/gradsoft/termware/parsers/terms/TermWare1.jj"
+          outputfile="docs/TermWareBNF.html"
+          javacchome="${javacchome}"
+  />
+ </target>
+
+
+
+ <target name="tapi-docs" depends="build">
+   <java classname="ua.gradsoft.termware.APIGen"
+         classpath="lib/TermWare-${termware.version}.jar" fork="true" >
+     <!--<sysproperty key="jaxp.debug" value="true" />-->
+     <!-- ant use xerces and reload property 
+          javax.xml.parsers.DocumentBuilderFactory.
+          So, "fork=true" is necessory, to allow java find build-in 
+           DocumentBuilderFactoryImpl
+     -->
+     <sysproperty key="termware.path" value="systems" />
+     <arg value="-o" />
+     <arg value="docs/TAPI" />
+   </java>
+ </target>
+
+
+ <target name="docs" depends="api-docs,tapi-docs,Semantics_rus,Semantics_eng" />
+
+</project>

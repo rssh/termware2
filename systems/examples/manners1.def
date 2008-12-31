@@ -1,0 +1,58 @@
+
+domain(examples,
+ system(manners1,default,
+  ruleset(
+    import(general),
+
+    # start from FIND
+    FIND([$x:$y]) -> P(0,[seat(0,$x)],$x,$y,[],false) || NEXT_FIRST($x,$y,[]),
+
+    # 
+    FIND([]) -> false,
+
+
+    #
+    NEXT_FIRST($x,[$y:$z],$rest) -> P(0,[seat(0,$y)],$y,$z,cons($x,$rest),true) || NEXT_FIRST($y,$z,cons($x,$rest)),
+
+    #
+    NEXT_FIRST($x,[],$rest) -> false,
+
+    # 
+    P($count, $completed, $last, $rest, $rest1, $done) [ !isNil($rest) || !isNil($rest1) ]
+                           -> 
+                            NEXT_STEP($count,$completed,$last,$rest,$rest1,$done)
+                         || NEXT_VARIANT($count, $completed, $last, $rest, $rest1,$done),
+                             
+
+    #append patch, if possible.
+    NEXT_STEP($count,$completed,$last,[$x:$y],$rest1,$done) [ $last.getSex() != $x.getSex() && intersection($last.getHobbies(),$x.getHobbies())!={} ] 
+                          -> 
+                             P($count+1,cons(seat($count+1,$x),$completed),$x,$y,$rest1,true)                                  
+                         !-> false,
+
+
+    NEXT_STEP($count,$completed,$last,[],$rest1,$done) [ $done==true ] -> NEXT_STEP($count,$completed,$last,$rest1,[],false)
+                                                                      !-> false,
+
+
+    #find next configuration to check
+    NEXT_VARIANT($count,$completed,$last,[$x:$y],$rest1,$done) -> P($count,$completed,$last,$y,cons($x,$rest1),false),
+                
+    # when all rst in rest1 => check, if some operation was performed
+    NEXT_VARIANT($count,$completed,$last,[],$rest1,$done) [ $rest1!=[] && $done==true ] -> NEXT_VARIANT($count,$completed,$last,$rest1,[],false) 
+                                                                                       !-> false,
+  
+    # when rest is empty, print result.
+    P($count, $completed, $last, [], [], $z) -> true [ println($completed) ],
+
+
+    # this rule speed-up search on near 50%
+    (($X || $Y) || $Z) -> $X || ($Y||$Z)
+
+  ),
+  FirstTop
+ )
+);
+
+
+  

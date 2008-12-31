@@ -1,0 +1,24 @@
+
+domain(examples,
+ domain(rec,
+  domain(trs,
+    #@option(reduceInFacts(false))
+    #--@option(loggedEntity(StrategyReductions))
+    system(fibonacci,default, 
+     ruleset(
+
+       0 + $N -> $N,
+      s($N)+$M -> s($N+$M),
+      fibb(0) -> s(0),
+      fibb(s(0)) -> s(0),
+
+      fibb(s(s($N))) -> fibb(s($N))+fibb($N),
+
+      T1 -> fibb(fibb(s(s(s(s(s(0)))))))
+
+
+     ), FirstTop
+    )
+  )
+ )
+);

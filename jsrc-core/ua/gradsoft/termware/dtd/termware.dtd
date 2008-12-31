@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : termware.dtd
+    Created on : 9, 08, 2005, 3:08
+    Author     : Ruslan Shevchenko
+    Description:
+        DTD for XML representation of TermWare systems
+
+
+    PUBLIC ID  : -//GradSoft//DTD TermWare ruleset//EN
+    SYSTEM ID  : http://www.gradsoft.ua/termware/termware.dtd
+-->
+
+<!ELEMENT termware (domain*) >
+<!ELEMENT termware-text (#PCDATA) >
+<!ELEMENT domain (domain | system)*  >
+<!ATTLIST domain 
+     name   CDATA    #REQUIRED     
+     id     ID       #IMPLIED
+>
+<!ELEMENT system (import-ruleset | rule-text)* >
+<!ATTLIST system
+      name      CDATA  #REQUIRED
+      facts     CDATA  #REQUIRED
+      strategy  CDATA  #REQUIRED
+      id           ID     #IMPLIED
+      debug        CDATA  #IMPLIED
+      debug-entity CDATA  #IMPLIED
+      pass-via     CDATA  #IMPLIED
+>
+<!ELEMENT import-ruleset (#PCDATA) >
+<!ATTLIST import-ruleset
+  name        CDATA   #REQUIRED
+  id          ID      #IMPLIED
+>
+<!ELEMENT rule-text (#PCDATA) >
+<!ATTLIST rule-text
+  name CDATA         #IMPLIED
+  description CDATA  #IMPLIED
+  id          ID     #IMPLIED
+>
+

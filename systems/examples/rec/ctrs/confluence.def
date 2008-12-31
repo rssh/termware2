@@ -1,0 +1,20 @@
+
+domain(examples,
+ domain(rec,
+  domain(ctrs,
+    #@option(reduceInFacts(true))
+    #--@option(loggedEntity(SystemReductions))
+    system(confluence,default, 
+     ruleset(
+       
+      f(g($x)) [ $x==0 ] -> $x,
+
+      g(g($x)) -> g($x),
+ 
+      T1 -> f(g(g(0)))
+
+     ),BottomTop
+    )
+  )
+ )
+);

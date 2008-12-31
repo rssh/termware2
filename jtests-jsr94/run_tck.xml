@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : run_tck.xml
+    Created on : 4, 09, 2005, 17:42
+    Author     : Ruslan Shevchenko
+    Description:
+        Wrapper for running original JSR-94 TCK tests
+-->
+<project name="TermWare-jsr94test" default="run" basedir=".">
+
+ <!-- set here location of JSR94 distribution -->
+ <!-- -->
+ <property name="tckhome" location="c:/home/rssh/toRead/JSRS/RuleEngine/1.0a" />
+ <!-- -->
+
+ <property name="tckroot" location="${tckhome}/jsr94-1.0" />
+ 
+ <target name="prepare">
+  <!-- create build directory -->
+  <mkdir dir="build" />
+  <mkdir dir="build/lib" />
+  <!-- copy tck from tck home -->
+  <copy todir="build/lib" >
+   <fileset dir="${tckroot}/lib" />
+  </copy>
+  <copy todir="build/src" >
+    <fileset dir="${tckroot}/src" />
+  </copy>
+  <copy todir="build" file="${tckroot}/run_tck.xml" />
+  <!-- copy our files over tck -->
+  <copy tofile="build/lib/tck.conf" file="tck/tck.conf" overwrite="true" />
+  <copy tofile="build/lib/tck_res_1.xml" file="tck/tck_res_1.xml" overwrite="true" />
+  <copy tofile="build/lib/tck_res_2.xml" file="tck/tck_res_2.xml" overwrite="true" />
+ </target>
+ 
+ <target name="clean">
+  <delete dir="build" failonerror="false" />
+ </target>
+ 
+ 
+
+ <target name="run" depends="prepare" >
+ 
+ <!--  Looks like bug in ANT - the following is not work.
+  <ant dir="build" antfile="run_tck.xml" target="tck.run" inheritall="true" >      
+  </ant>
+ -->
+ 
+ <java classname="org.apache.tools.ant.Main" fork="true" dir="build" >
+   <classpath>
+    <pathelement location="build/lib/ant.jar" />
+    <pathelement path="../lib/TermWare2jsr94.jar"/>
+    <pathelement path="../lib/TermWare2.jar"/>
+    <pathelement path="${java.class.path}"/>
+   </classpath>
+   <arg line="-f run_tck.xml tck.run" />      
+ </java>
+ 
+ </target>
+ 
+</project>

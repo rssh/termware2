@@ -1,0 +1,24 @@
+
+domain(examples,
+ domain(rec,
+  domain(trs,
+    #@option(reduceInFacts(false))
+    #--@option(loggedEntity(StrategyReductions))
+    system(factorial,default, 
+     ruleset(
+
+       0 + $N -> $N,
+      s($N)+$M -> s($N+$M),
+      0 * $M -> 0,
+      s($N)*$M -> $M+$N*$M,
+      fact(0) -> s(0),
+      fact(s($N)) -> s($N)*fact($N), 
+
+      # TOO long
+      T1 -> fact(fact(s(s(s(s(s(0)))))))
+
+     ), FirstTop
+    )
+  )
+ )
+);

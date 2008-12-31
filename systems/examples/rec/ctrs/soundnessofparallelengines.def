@@ -1,0 +1,23 @@
+#
+# from Rewrite Engines Competition.
+#
+#
+domain(examples,
+ domain(rec,
+  domain(ctrs,
+    #@option(reduceInFacts(true))
+    system(soundnessofparallelengines,default, 
+     ruleset(
+
+      f(g($X)) -> $X [ $X==s(0) ],
+      g(s($X)) -> g($X),
+
+       ##
+       # depends from strategy.
+       #note, that we can get only one normal form
+       T1 -> f(g(s(0)))
+
+     ),TopDown)
+  )
+ )
+);

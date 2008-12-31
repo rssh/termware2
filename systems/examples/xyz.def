@@ -1,0 +1,10 @@
+
+domain(examples,
+  system(xyz,default,
+    ruleset(
+      x->y,
+      y->z
+    ),
+    FirstTop
+) );
+

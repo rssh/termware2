@@ -1,0 +1,2 @@
+java -Dtermware.path="$INSTALL_PATH\systems" -jar "$INSTALL_PATH\lib\TermWare2.jar" ua.gradsoft.termware.CMDMain %1 %2 %3 %4 %5 %6 %7 %8
+java -Dtermware.path="..\systems" -jar "..\lib\TermWare2.jar" ua.gradsoft.termware.CMDMain %1 %2 %3 %4 %5 %6 %7 %8

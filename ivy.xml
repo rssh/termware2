@@ -1,0 +1,38 @@
+<ivy-module version="1.0">
+ <!-- ivy module for termware -->
+ <info organisation="ua.gradsoft" module="termware" />
+ <configurations>
+  <conf name="jar" description="provide termware jar" />
+  <conf name="jsr94" extends="jar" description="provide termware jsr94 api" />
+  <conf name="build" description="provide termware with build tools" />
+  <conf name="test" extends="jar" description="termware with tests" />
+  <conf name="src" extends="test,build,jsr94" 
+                         description="termware source distribution" />
+  <conf name="src.only" 
+                         description="special configuration for src publish" />
+ </configurations>
+ <publications>
+    <artifact name="TermWare" type="jar" conf="jar" />
+    <artifact name="TermWare2jsr94" type="jar" conf="jsr94" />
+    <artifact name="TermWareInstaller" type="installer" ext="jar" 
+              conf="src,src.only" />
+ </publications>
+ <dependencies>
+   <dependency org="net.java.dev.javacc" name="javacc" rev="4.0" 
+               conf="build->default" transitive="false" >
+   </dependency>
+   <!--
+     now installer must be set before building of termwarte
+   <dependency org="izpack" name="installer" rev="3.10.2" 
+               conf="src->default" transitive="false" />
+   -->
+   <dependency org="ua.gradsoft" name="odt2html" rev="1.1" 
+               conf="src->default" transitive="false" >
+         <artifact name="odt2html" type="jar"
+           url="http://odt2html.gradsoft.ua/files/odt2html-1.1.jar"
+         />
+   </dependency>
+   <dependency org="org.junit" name="junit" rev="3.8" 
+               conf="test->default" />
+ </dependencies>
+</ivy-module>

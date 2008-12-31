@@ -1,0 +1,47 @@
+
+#
+#port of marchiory.rec
+# from rule engine competition.
+
+domain(examples,
+ domain(rec,
+  domain(ctrs,
+    #@option(reduceInFacts(true))
+    #--@option(loggedEntity(All))
+    system(marchiori,default, 
+     ruleset(
+
+       # during rewriting undeterminate choice will be appliyed.
+       # (usially - first)
+       a -> c,
+       a -> d,
+
+       b -> c,
+       b -> d,
+     
+       c -> e,
+       c -> l,
+
+       d -> m,
+
+       k -> l,
+       k -> m,
+
+       A -> h(f(a),f(b)),
+       g(d,$X,$X) -> B,
+       h($X,$X) -> g($X,$X,f(k)),
+       f($X) [ $X==e ] -> $X,
+
+       B -> A,
+
+       # does A rewrites to B ?
+       #
+       T1 [ A==B ] -> same !-> differ,
+
+       T2 -> A
+
+     ),FirstTop
+    )
+  )
+ )
+);

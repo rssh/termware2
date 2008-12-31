@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE attributes PUBLIC "-//NetBeans//DTD DefaultAttributes 1.0//EN" "http://www.netbeans.org/dtds/attributes-1_0.dtd">
+<attributes version="1.0">
+    <fileobject name="AssertException.java">
+        <attr name="class_dependency_ua.gradsoft.termware.TermWareException" stringvalue="AssertException"/>
+    </fileobject>
+    <fileobject name="ConversionException.java">
+        <attr name="class_dependency_ua.gradsoft.termware.TermWareException" stringvalue="ConversionException"/>
+    </fileobject>
+    <fileobject name="EnvException.java">
+        <attr name="class_dependency_ua.gradsoft.termware.TermWareException" stringvalue="EnvException"/>
+    </fileobject>
+    <fileobject name="InvalidDomainNameException.java">
+        <attr name="class_dependency_ua.gradsoft.termware.TermWareException" stringvalue="InvalidDomainNameException"/>
+    </fileobject>
+    <fileobject name="InvalidFactsNameException.java">
+        <attr name="class_dependency_ua.gradsoft.termware.TermWareException" stringvalue="InvalidFactsNameException"/>
+    </fileobject>
+    <fileobject name="InvalidSystemNameException.java">
+        <attr name="class_dependency_ua.gradsoft.termware.TermWareException" stringvalue="InvalidSystemNameException"/>
+    </fileobject>
+    <fileobject name="MatchingFailure.java">
+        <attr name="class_dependency_ua.gradsoft.termware.TermWareException" stringvalue="MatchingFailure"/>
+    </fileobject>
+    <fileobject name="RuntimeAssertException.java">
+        <attr name="class_dependency_ua.gradsoft.termware.TermWareRuntimeException" stringvalue="RuntimeAssertException"/>
+    </fileobject>
+    <fileobject name="SubtermNotFoundException.java">
+        <attr name="class_dependency_ua.gradsoft.termware.TermWareException" stringvalue="SubtermNotFoundException"/>
+    </fileobject>
+</attributes>

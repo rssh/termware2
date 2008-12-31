@@ -1,0 +1,95 @@
+
+#
+# run all ready benchmarks from rec.
+#
+
+domain(examples,
+ domain(rec,
+    #@option(reduceInFacts(false))
+    #--@option(loggedEntity())
+    system(all,default, 
+     ruleset(
+       import(general,logical_and),
+       import(sys,getCurrentTimeMillis),
+
+       tests -> [
+        p("cs/sieve - (1)", examples::rec::cs::sieve.T1, ready),
+        p("cs/sieve - (2)", examples::rec::cs::sieve.T2, skip),
+        p("ctrs/bubble-sort - (1)", examples::rec::ctrs::bubblesort.T1, ready),
+        p("ctrs/bubble-sort - (2)", examples::rec::ctrs::bubblesort.T2, ready),
+        p("ctrs/closure - (1),infinity", examples::rec::ctrs::closure.T2, skip),
+        p("ctrs/confluence", examples::rec::ctrs::confluence.T1, ready),
+        p("ctrs/fibFree", examples::rec::ctrs::fibFree.T1, ready),
+        p("ctrs/hanoi", examples::rec::ctrs::hanoi.T1, ready),
+        p("ctrs/marchiori", examples::rec::ctrs::marchiori.T1, ready),
+        p("ctrs/merge-sort - (1)", examples::rec::ctrs::mergesort.T1, ready),
+        p("ctrs/merge-sort - (2)", examples::rec::ctrs::mergesort.T2, ready),
+        p("ctrs/merge-sort - (3)", examples::rec::ctrs::mergesort.T3, skip),
+        p("ctrs/missionaroes", examples::rec::ctrs::missionaries.T1, ready),
+        p("ctrs/odd-even - (1)", examples::rec::ctrs::oddeven.T1, ready),
+        p("ctrs/odd-even - (2)", examples::rec::ctrs::oddeven.T2, ready),
+        p("ctrs/odd-even - (3)", examples::rec::ctrs::oddeven.T3, ready),
+        p("ctrs/quicksort - (1)", examples::rec::ctrs::quicksort.T1, ready),
+        p("ctrs/quicksort - (2)", examples::rec::ctrs::quicksort.T2, ready),
+        p("ctrs/quicksort - (3)", examples::rec::ctrs::quicksort.T3, ready),
+        p("ctrs/searchinconditions ", 
+                     examples::rec::ctrs::searchinconditions.T1, ready),
+        p("ctrs/soundnessofparallelengines", 
+               examples::rec::ctrs::soundnessofparallelengines.T1, ready),
+        p("ctrs/terminationreachability -(1)", 
+               examples::rec::ctrs::terminationreachability.T1, ready),
+        p("ctrs/terminationreachability -(2)", 
+               examples::rec::ctrs::terminationreachability.T2, ready),
+        p("modulo/dart", examples::rec::modulo::dart.T1, ready),
+        p("modulo/logic3", examples::rec::modulo::logic3.T1, skip),
+        p("modulo/permutations", examples::rec::modulo::permutations.T1, ready),
+        p("modulo/tautHard", examples::rec::modulo::tautHard.T1, skip),
+        p("trs/asfsdfbenchmark - (1)", 
+               examples::rec::trs::asfsdfbenchmark.T1, ready),
+        p("trs/asfsdfbenchmark - (2)", 
+               examples::rec::trs::asfsdfbenchmark.T2, ready),
+        p("trs/asfsdfbenchmark - (3)", 
+                examples::rec::trs::asfsdfbenchmark.T3, ready),
+        p("trs/asfsdfbenchmark - (4)", 
+                examples::rec::trs::asfsdfbenchmark.T4, ready),
+        p("trs/asfsdfbenchmark - (5)", 
+                examples::rec::trs::asfsdfbenchmark.T5, ready),
+        p("trs/asfsdfbenchmark - (6)", 
+                examples::rec::trs::asfsdfbenchmark.T6, ready),
+        p("trs/factorial", 
+                examples::rec::trs::factorial.T1, skip),
+        p("trs/fibonacci", 
+                examples::rec::trs::fibonacci.T1, ready),
+        p("trs/garbagecollection - (1)", 
+                examples::rec::trs::garbagecollection.T1, ready),
+        p("trs/garbagecollection - (2)", 
+                examples::rec::trs::garbagecollection.T2, ready),
+        p("trs/rev", examples::rec::trs::rev.T1, ready)
+       ],
+
+       run -> run(tests),
+
+       run([$x:$y]) -> runOne($x)&&run($y),
+       run([])->true,
+
+       runOne(p($name,$action,ready)) 
+                 -> true [
+                      [
+                        println($name),
+                        let ( $startTime <- sys.getCurrentTimeMillis() )  
+                         [println($action), 
+                          let ($endTime <- sys.getCurrentTimeMillis())
+                            println(T($name,$startTime,$endTime,$endTime-$startTime))
+                         ]
+                      ]
+                    ],
+
+       runOne(p($name,$action,skip)) 
+                 -> true [ [ print($name), println(" - skip") ] ],
+                        
+       runOne($X) -> false [ [ print("invalid test record:"),println($X) ] ]
+
+     ), FirstTop
+  )
+ )
+);

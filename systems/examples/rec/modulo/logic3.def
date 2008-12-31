@@ -1,0 +1,89 @@
+#
+# part of rewrite engines competition
+#
+#
+
+domain(examples,
+ domain(rec,
+  domain(modulo,
+    #@option(reduceInFacts(false))
+    #--@option(loggedEntity(StrategyReductions))
+    #--@option(loggedEntity(SystemReductions,StrategyReductions))
+    system(logic3,default, 
+     ruleset(
+
+      P(0,$X) -> $X,
+      P($X,0) -> $X,
+      M(0,$X) -> 0,
+      M($X,0) -> 0,
+      M(1,$X) -> $X,
+      M($X,1) -> $X,
+      2 -> P(1,1),
+      M(2,$X) -> M(P(1,1),$X),
+      M(P($X,$Y),$Z) -> P(M($X1,$Z1),M($Y1,$Z1)) where ($X1<-$X,$Y1<-$Y,$Z1<-$Z),
+      M($X,2) -> M($X,P(1,1)),
+      M($Z,P($X,$Y)) -> P(M($X1,$Z1),M($Y1,$Z1)) where ($X1<-$X,$Y1<-$Y,$Z1<-$Z),
+      P($X,P($X,$X)) -> 0,
+      P(P($X,$X),$X) -> 0,
+      M($X,M($X,$X)) -> $X,
+      M(M($X,$X),$X) -> $X,
+
+      and($X,$Y) -> P(M(M($X1,$X1),M($Y1,$Y1)), 
+                     P(M(2,M(M($X1,$X1),$Y1)),
+                      P(M(2,M(M($Y1,$Y1),$X1)),
+                        M(2,M($X1,$Y1)) )))
+                    where( $X1 <- $X, $Y1 <- $Y )
+                   , 
+
+    or($X,$Y) -> P(M(2,M(M($X1,$X1),M($Y1,$Y1))),
+                 P(M(M($X1,$X1),$Y1),
+                   P(M(M($Y1,$Y1),$X1),
+                     P(M($X1,$Y1),
+                       P($X1,$Y1) ))))
+                    where( $X1 <- $X, $Y1 <- $Y )
+                   ,
+
+    not($X) -> P(M(Two,$X),One),
+
+    # P is assoc, comm
+    P(P($X,$Y),$Z) -> P($X,P($Y,$Z)),
+    #P($X,P($Y,$Z)) -> P(P($X,$Y),$Z),
+    #P(P($X,$Y),$Z) -> P(P($X,$Y),$Z),
+    # P($X,$Y) [ term_less($Y,$X) ] -> P($Y,$X),
+
+    # M is assoc, comm
+    M(M($X,$Y),$Z) -> M($X1,M($Y,$Z)) where ($X1<-$X) ,
+    #M($X,M($Y,$Z)) -> M(M($X,$Y),$Z),
+    # M($X,$Y) [ term_less($Y,$X) ] -> M($Y,$X),
+    
+    
+
+      ###
+      # T01 -> and(and(and(a, b), and(c, d)), and(and(e, f), and(g, h))), 
+      #T001 -> and(and(a, b), and(c, d)),
+      T0001 -> and(a, b),
+      T0002 -> and(c, d),
+      #T001 -> and(T0001, T0002),
+
+      ## next is too long:
+      #T02 -> not(or(or(or(not(a), not(b)), or(not(c), not(d))),
+      #                      or(or(not(e), not(f)), or(not(g), not(h))))),
+
+      T002 ->  or(not(c), not(d)),
+
+      #check the concluence of:
+      # 
+      # T1 
+      #  let ($x1 <- and(and(and(a, b), and(c, d)), and(and(e, f), and(g, h))), 
+      #       $x2 <- not(or(or(or(not(a), not(b)), or(not(c), not(d))),
+      #                     or(or(not(e), not(f)), or(not(g), not(h))))))
+      #  [$x1==$x2] -> same !-> different($x1,$x2)
+         
+      AAA -> END
+
+
+     ), BottomTop
+    )
+  )
+ )
+);

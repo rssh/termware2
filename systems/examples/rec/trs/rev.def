@@ -1,0 +1,24 @@
+
+domain(examples,
+ domain(rec,
+  domain(trs,
+    #@option(reduceInFacts(false))
+    #--@option(loggedEntity(StrategyReductions))
+    system(rev,default, 
+     ruleset(
+
+       conc(l($E, $L), $L1) -> l($E, conc($L, $L1)),
+       conc(nil, $L1) -> $L1,
+       dup($L) -> conc($L, $L),
+       rev(l($E, $L)) -> conc(rev($L), l($E, nil)),
+       rev(nil) -> nil,
+
+       #get normal form for:
+       T1-> rev(dup(l(a, l(b, l(c, l(d, l(e, nil)))))))
+
+
+     ), FirstTop
+    )
+  )
+ )
+);

@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="KOI8-R"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" 
+                     "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"
+[
+<!ENTITY % MATHML.prefixed "INCLUDE">
+<!ENTITY % MATHML.prefix "mml">
+<!ENTITY % equation.content "(alt?, (graphic+|mediaobject+|mml:math))">
+<!ENTITY % inlineequation.content 
+                "(alt?, (graphic+|inlinemediaobject+|mml:math))">
+<!--                
+<!ENTITY % mathml PUBLIC "-//W3C//DTD MathML 2.0//EN"
+        "http://www.w3.org/TR/MathML2/dtd/mathml2.dtd">
+%mathml;
+-->
+<!-- in practice - MathML does not work here yet,
+                   let's wait few years.
+         we will avoid using MathML in this document.
+-->
+]>
+<article>
+  <artheader>
+  <title>TermWare - JSR94 API </title>
+  <author>
+      <firstname>Ruslan</firstname>
+      <surname>Schevchenko</surname>
+    </author>
+  </artheader>
+  <abstract>
+    <para> Implementation of JSR-94 API in TermWare is described.
+   <itemizedlist>
+        <listitem>
+          <ulink url="www.jcp.org/jsr94"> <citetitle> JSR-94 </citetitle> </ulink>
+        </listitem>
+        <listitem>
+          <simpara>
+          <ulink url="../docs/Semantics_eng/Semantics_eng.html">  <citetitle> Semantics Description </citetitle> </ulink>
+          </simpara>
+        </listitem>
+        <listitem>
+          <simpara>
+          <ulink url="TermWareBNF.html">  <citetitle> TermWare BNF </citetitle> </ulink>
+          </simpara>
+        </listitem>
+        <listitem>
+          <simpara>
+          <ulink url="../docs/TAPI/index.html">  <citetitle> TermWare buildin transformers </citetitle> </ulink>
+          </simpara>
+        </listitem>
+      </itemizedlist>
+   </para>
+  </abstract>
+  <sect1>
+    <title> XML representation of rule execution sets </title>
+    <para>      
+    </para>
+    <sect2>
+      <title> Few examples </title>
+      <sect3> 
+       <title> Format 1 - simple unstructured text </title>
+       <para>
+         Most simple case of XML representation - just wrap definition in original termware language
+      in XML element as text. So, root element is 'termware-text': all what is inside this
+       element is original TermWare definitions.
+       </para>
+       <para>
+         DTD fragemnt looks as follow:
+       </para>
+       <para>   
+<programlisting>
+<![CDATA[
+<!-- XML DTD -->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One root element - TermWare and text inside on -->
+<!ELEMENT termware-text (#PCDATA)>
+]]>
+</programlisting>
+       </para>
+  For exaple, next definitons:
+<programlisting>
+<![CDATA[
+
+  system(SemiGroup,default,
+         ruleset( ($x*$y)*$z -> $x*($y*$z) ),
+         FirstTop)
+);
+]]>
+</programlisting>
+  Will be look as:
+<programlisting><![CDATA[
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE termware-text PUBLIC
+	"-//GradSoft//DTD TermWare ruleset form 1//EN"
+	"http://www.gradsoft.ua/dtd/termware-1.dtd">
+<termware-text>
+<![CDATA[
+
+  system(SemiGroup,default,
+         ruleset( ($x*$y)*$z -> $x*($y*$z) ),
+         FirstTop)
+);
+]]>
+]]&gt;
+<![CDATA[
+</termware-text>
+]]>
+</programlisting>
+    </sect3>
+    <sect3>
+        <title> Format 2 - XML element for rule set. </title>
+    <para>
+        Next format, which can be useful - mark out XML elements for domains and systems. (System in
+  Termware is analog of ruleset, with domains we can group systems into hierarchy).
+     Name of system, facts db and strategy are attributes of system term.
+    </para>
+       <para>
+         DTD fragment looks as follow:
+       </para>
+       <para>   
+<programlisting>
+<![CDATA[
+<!-- XML DTD -->
+<?xml version="1.0" encoding="utf-8"?>
+<! -->
+
+<!ELEMENT termware domain>
+<!ELEMENT domain (domain*  system-text*) >
+<!ATTLIST domain 
+     name   CDATA    #REQUIRED
+     id     NMTOKEN  #IMPLIED
+>
+<!ELEMENT system-text (#PCDATA) >
+<!ATTLIST system-text
+      name      CDATA  #REQUIRED,
+      facts     CDATA  #REQUIRED,
+      strategy  CDATA  #REQUIRED,
+      id     NMTOKEN  #IMPLIED
+>
+]]>
+</programlisting>
+       </para>
+    <simpara> Example: </simpara>
+      <programlisting>
+<![CDATA[
+<termware>
+<domain name="examples" >
+ <system-text name="Life" strategy="FirstTop" facts="ua.gradsoft.termwaredemos.life.Life1Facts" >
+ <![CDATA[
+
+        #@description born-of-new-cell
+        { l($i,$j) : $T} [ n($i,$j) == 3 ] -> $T [ putCell($i,$j) ],
+
+        #@description static-cell
+        { l($i,$j) : $T} [ n($i,$j) == 2 ] -> $T [ existsCell($i,$j) ? putCell($i,$j) : removeCell($i,$j) ] ,
+
+        #@description die-of-cell
+        { l($i,$j) : $T} [ n($i,$j) > 3 || n($i,$j) < 2 ] -> $T [ removeCell($i,$j) ],
+
+
+        #@description empty-set
+        { } -> checkEmpty($T) [ showGeneration() , generateNextTestSet($T) ],
+
+        #@description check-empty-notnull
+        checkEmpty({$x:$Y}) -> { $x:$Y },
+
+        #@description check-empty-null
+        checkEmpty({}) -> END
+               
+ ]]>]]&gt;<![CDATA[
+ </system-text>
+</domain>
+ </termware>
+]]>
+</programlisting>
+    </sect3>
+    <sect3>
+        <title> Format 3 - XML element for each rule. </title>
+        In next level of detalization we can mark out XML element for each rule.
+<programlisting>
+<![CDATA[
+<!-- XML DTD -->
+<?xml version="1.0" encoding="utf-8"?>
+<! -->
+
+<!ELEMENT termware domain>
+<!ELEMENT domain (domain* system*) >
+<!ATTLIST domain 
+     name   CDATA    #REQUIRED
+     id     ID       #IMPLIED
+>
+<!ELEMENT system (import-ruleset | rule-text)* >
+<!ATTLIST system
+      name      CDATA  #REQUIRED,
+      facts     CDATA  #REQUIRED,
+      strategy  CDATA  #REQUIRED,
+      id        ID     #IMPLIED
+>
+<!ELEMENT import-ruleset (#PCDATA) >
+<!ATTLIST import-ruleset
+  name        CDATA   #REQUIRED
+  id          ID      #IMPLIED
+>
+<!ELEMENT rule-text (#PCDATA) >
+<!ATTLIST rule-text
+  name CDATA  #IMPLIED
+  description PCDATA #IMPLIED
+  id          ID     #IMPLIED
+>
+]]>
+</programlisting>
+<simpara>
+  Previous example can be rewriten as:
+</simpara>
+      <programlisting>
+<![CDATA[
+<domain name="examples" >
+ <system name="Life" strategy="FirstTop" facts="ua.gradsoft.termwaredemos.life.Life1Facts" >
+   
+  <rule-text description="born-of-new-cell>
+       <![CDATA[
+        { l($i,$j) : $T} [ n($i,$j) == 3 ] -> $T [ putCell($i,$j) ]
+       ]]>]]&gt;<![CDATA[ 
+  </rule-text>
+  <rule-text description="static cell">
+       <![CDATA[
+        { l($i,$j) : $T} [ n($i,$j) == 2 ] -> $T [ existsCell($i,$j) ? putCell($i,$j) : removeCell($i,$j) ] 
+       ]]>]]&gt;<![CDATA[
+   <rule-text description="die">    
+        <![CDATA[ 
+         { l($i,$j) : $T} [ n($i,$j) > 3 || n($i,$j) < 2 ] -> $T [ removeCell($i,$j) ]
+         ]]>]]&gt;<![CDATA[
+   </rule-text>     
+   <rule-text description="empty set">
+        <![CDATA[ 
+        { } -> checkEmpty($T) [ showGeneration() , generateNextTestSet($T) ],
+         ]]>]]&gt;<![CDATA[
+   </rule-text>     
+   <rule-text description="check-empty-notempty">
+        <![CDATA[ 
+        checkEmpty({$x:$Y}) -> { $x:$Y },
+        ]]>]]&gt;<![CDATA[
+   </rule-text>     
+   <rule-text description="check-empty-empty">
+       <![CDATA[ 
+        checkEmpty({}) -> END
+        ]]>]]&gt;<![CDATA[
+   </rule-text>                    
+ ]]>]]&gt;<![CDATA[
+ </system-text>
+</domain>
+]]>
+</programlisting>
+    </sect3>
+    </sect2>
+    <sect2>
+        <title> DTD and attribute specifications </title>
+<simpara>
+  So, complete DTD is:  
+</simpara>
+<programlisting>
+<![CDATA[
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : termware.dtd
+    Author     : Ruslan Shevchenko
+    Description:
+        DTD for XML representation of TermWare systems
+
+
+    PUBLIC ID  : -//GradSoft//DTD TermWare ruleset//EN
+    SYSTEM ID  : http://www.gradsoft.ua/termware/termware.dtd
+-->
+
+<!ELEMENT termware (domain*) >
+<!ELEMENT termware-text (#PCDATA) >
+<!ELEMENT domain (domain | system | system-text )*  >
+<!ATTLIST domain 
+     name   CDATA    #REQUIRED     
+     id     ID       #IMPLIED
+>
+<!ELEMENT system (import-ruleset | rule-text)* >
+<!ATTLIST system
+      name      CDATA  #REQUIRED
+      facts     CDATA  #REQUIRED
+      strategy  CDATA  #REQUIRED
+      id           ID     #IMPLIED
+      debug        CDATA  #IMPLIED
+      debug-entity CDATA  #IMPLIED
+      pass-via     CDATA  #IMPLIED
+>
+<!ELEMENT import-ruleset (#PCDATA) >
+<!ATTLIST import-ruleset
+  name        CDATA   #REQUIRED
+  id          ID      #IMPLIED
+>
+<!ELEMENT rule-text (#PCDATA) >
+<!ATTLIST rule-text
+  name CDATA         #IMPLIED
+  description CDATA  #IMPLIED
+  id          ID     #IMPLIED
+>
+]]>
+</programlisting>
+ <para>
+  As you can see, all is evident. Some peculuarities:
+        <itemizedlist> 
+         <listitem><simpara>
+             Domain attributes: 
+            <itemizedlist> 
+              <listitem><simpara>
+               name - name of domain. Special name  'root'  means root domain. 
+             </simpara></listitem>
+              <listitem><simpara>
+               id - id of XML elements. This iid soes not used inside rule system, but can be usefull
+during processing of XML files.
+             </simpara></listitem>
+            </itemizedlist> 
+              domain children elements: 
+            <itemizedlist> 
+              <listitem><simpara>
+               domain - definition od subdomain. 
+             </simpara></listitem>
+              <listitem><simpara>
+               system - definition of Term System (in JSR-94 terminology - rule execution set).
+             </simpara></listitem>
+              <listitem><simpara>
+               system-text - definition of term system in plain text.
+             </simpara></listitem>
+            </itemizedlist> 
+         </simpara></listitem>
+         <listitem><simpara>
+             'system' attributes.
+              <itemizedlist> 
+               <listitem><simpara>
+                 name - name of system.
+               </simpara></listitem>
+               <listitem><simpara>
+                 facts - name of facts database. (see. Semantics Description).
+               </simpara></listitem>
+               <listitem><simpara>
+                 strategy - name of strategy (see Semantics Description). 
+               </simpara></listitem>
+               <listitem><simpara>
+                 id - id of element.
+               </simpara></listitem>
+               <listitem><simpara>
+                 debug - boolean property, which is equivalent to call of setDebugMode with appropriative 
+                   parameter after system initialization.
+               </simpara></listitem>
+               <listitem><simpara>
+                 debug-entity - string, which define scope of debug output. Usially all or full name of debug class.
+                 Used only if 'debug' set to 'true'.
+               </simpara></listitem>
+               <listitem><simpara>
+                 pass-via - If exists, than define name of term, in which object list is wrapped during
+             passing to rule execution set. By default system receive list of object (i. e. term
+             in form <code>[a,b,c,d]</code>.
+              This is often incovenient to use, beccouse generic list is too generic object (sorry for tautology).
+              If parameter of <code> pass-via </code> is set to name <code> X </code>, then during
+              passing to rule execution set list of objects <code> a, b, c, d </code>, system will
+              receive term X([a,b,c,d]).
+               </simpara></listitem>
+            </itemizedlist>               
+              system child elements:
+            <itemizedlist> 
+              <listitem><simpara>
+               import-ruleset - import specification for set of rules from other system.
+             </simpara></listitem>
+              <listitem><simpara>
+               rule-text - text of rule.
+             </simpara></listitem>
+            </itemizedlist> 
+         </simpara></listitem>
+         <listitem><simpara>
+             'import-ruleset' attributes
+              <itemizedlist> 
+               <listitem><simpara>
+                 name - name of system, from which we import rules.
+               </simpara></listitem>
+               <listitem><simpara>
+                 id - id of elements.
+               </simpara></listitem>
+              </itemizedlist> 
+             Child elements are absent.
+         </simpara></listitem>
+         <listitem><simpara>
+            'rule-text' attributes:
+              <itemizedlist> 
+               <listitem><simpara>
+                 name - name of rule. optional.
+               </simpara></listitem>
+               <listitem><simpara>
+                 description - description of rule.
+               </simpara></listitem>
+               <listitem><simpara>
+                 id - id of element.
+               </simpara></listitem>
+              </itemizedlist> 
+          Inside <code> rule-text </code> text of rewriting rules in termware language is contatined. 
+         </simpara></listitem>
+         <listitem><simpara>
+            'system-text' attributes are the same, as in  'system' element
+         </simpara></listitem>
+        </itemizedlist> 
+ </para>   
+   </sect2>
+  </sect1>
+  <sect1>
+   <title> Properties of rule execution sets </title>
+   <para>
+    I. e. it's about parameter  <code> properties </code> in family of methods, which create rule session.
+    <itemizedlist>
+      <listitem><simpara>
+         RoundingMode - rounding mode for decimal values. Must be integer value, one of constant which is
+         defined in <code>java.math.BigDecimal</code>
+      </simpara></listitem>
+      <listitem><simpara>
+         DecimalScale - target precision during dividing of big decimal values.
+      </simpara></listitem>
+    </itemizedlist> 
+   </para>
+  </sect1>
+  <sect1>
+   <title> Running JSR-94 TCK </title>
+   <para>
+     Procedure of running JSR-94 test-cases looks as follow:
+    <itemizedlist>
+      <listitem><simpara>
+         It is necessory to download and unzip JSR-94 Technology Compability Kit from jcp site.
+      </simpara></listitem>
+      <listitem><simpara>
+         In distributive termware cd to <filename> jtests-jsr94. </filename> subdir.
+      </simpara></listitem>
+      <listitem><simpara>
+         Set property <code> tckhome </code> in file <filename> run_tck.xml </filename>.
+      </simpara></listitem>
+      <listitem><simpara>
+         Start target <code> run </code> in <filename> run_tck.xml </filename> with command <command>ant -f run_tck.xml run</command>
+      </simpara></listitem>
+      <listitem><simpara>
+         System will copy  tck to <filename> build </filename> subdir, owerride files
+         <filename> tck.conf </filename>, <filename> tck_res1.xml </filename>, <filename> tck_res2.xml </filename>
+         by own and start testing process. Of course, it is also possible to do this by hands.  
+      </simpara></listitem>
+      <listitem><simpara>
+         After tests execution, junit reports can be found in subdir <filename> build/reports </filename>.
+      </simpara></listitem>
+    </itemizedlist> 
+     
+   </para>
+  </sect1>
+
+</article>

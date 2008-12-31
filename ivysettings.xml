@@ -1,0 +1,42 @@
+<ivysettings>
+ <settings defaultResolver="global.chain" checkUpToDate="false" />
+ <!--<properties file="build.properties" />-->
+ <property name="ibiblio-maven2-root" value="http://repo1.maven.org/maven2/" />
+ <namespaces>
+  <namespace name="maven2" >  
+  <rule> <!-- for junit -->
+   <fromsystem>
+    <src org="org.junit" module="junit" />
+    <dest org="junit" module="junit" />
+   </fromsystem>
+   <tosystem>
+     <src org="junit" module="junit" />
+     <dest org="org.junit" module="junit" />
+   </tosystem>
+  </rule>
+  </namespace>  
+  <namespace name="gradsoft" />  
+ </namespaces>
+ 
+ <resolvers>
+  <ibiblio name="ibiblio" root="${ibiblio-maven2-root}"
+           m2compatible="true" namespace="maven2" />
+  <url name="www.gradsoft.ua" namespace="gradsoft" >
+     <ivy pattern="http://www.gradsoft.ua/common/termware/ivy-[revision].xml" />
+     <artifact pattern="http://www.gradsoft.ua/common/termware/[artifact]-[revision].[ext]" />
+  </url>
+  <chain name="global.chain" >
+   <resolver ref="ibiblio" />
+  </chain>
+  <ssh name="publish.gradsoft.ua" namespace="gradsoft" >
+     <ivy pattern="ssh://outpost.gradsoft.ua/www/gradsoft.com.ua/data/common/termware/ivy-[revision].xml" />
+     <artifact pattern="ssh://outpost.gradsoft.ua/www/gradsoft.com.ua/data/common/termware/[artifact]-[revision].[ext]" />
+  </ssh>
+ </resolvers>
+ 
+ <modules>
+      <module organisation="ua.gradsoft" name="termware" 
+              resolver="global.chain" />
+ </modules>
+
+</ivysettings>

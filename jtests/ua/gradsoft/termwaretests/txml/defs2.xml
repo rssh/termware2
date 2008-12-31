@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE termware PUBLIC
+	"-//GradSoft//DTD TermWare ruleset//EN"
+	"http://www.gradsoft.ua/termware/termware.dtd">
+
+<termware>
+  <domain name="TestDomain" description="test domain">
+    <system name="TestSystem1" description="test system 1" strategy="FirstTop" facts="default">
+     <rule-text description="first rule">
+        p($x,$y) [ $y==0 ] -&gt; $x
+                          !-&gt; p($x+$y, $y-1)
+     </rule-text>
+     <rule-text description="second rule">
+        f($x) -&gt; p($x, $x)
+     </rule-text>
+    </system>
+    <system name="TestSystem2" description="test system 2" strategy="FirstTop" facts="default">
+      <rule-text description="length of nonempty list">
+        len([$x,$y]) -&gt; 1+len($y)
+      </rule-text>
+      <rule-text description="length of empty list">
+        len([]) -&gt; 0
+      </rule-text>
+    </system>
+  </domain>
+</termware>

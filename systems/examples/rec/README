@@ -1,0 +1,8 @@
+
+  Examples from Rewrite Engines Competition:
+
+  see http://www.lcc.uma.es/~duran/rewriting_competition/
+
+  to run examples, start all.def with command:
+    sh TermWare.cmd.sh -c "examples::rec::all.run" 
+

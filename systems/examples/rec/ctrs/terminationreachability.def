@@ -1,0 +1,27 @@
+#
+# from Rewrite Engines Competition.
+#
+#
+domain(examples,
+ domain(rec,
+  domain(ctrs,
+    #@option(reduceInFacts(true))
+    system(terminationreachability,default, 
+     ruleset(
+
+       a [ a == b ] -> c,
+       a -> b,
+       b -> c,
+
+       ##
+       # will be reduced to c in any case.
+       T1 -> a,
+
+       ##
+       # same
+       T2 [ a==b ] -> same !-> differ
+
+     ),TopDown)
+  )
+ )
+);

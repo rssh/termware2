@@ -1,0 +1,84 @@
+
+#
+#port of mergesort.rec
+# from rule engine competition.
+
+domain(examples,
+ domain(rec,
+  domain(ctrs,
+    #@option(reduceInFacts(true))
+    #--@option(loggedEntity(All))
+    system(mergesort,default, 
+     ruleset(
+
+       10 -> s(s(s(s(s(s(s(s(s(s(0)))))))))),
+
+       0 <= s($N) -> true,
+       s($N) <= 0 -> false,
+       $N <= $N   -> true,
+       s($N) <= s($M) -> $N <= $M,
+
+       0 + $N -> $N,
+       s($N) + $M -> s($N+$M),
+
+       0 * $N -> 0,
+       s($N)*$M -> $M+($N*$M),
+
+       !(0) -> s(0),
+       !(s($N)) -> s($N)*!($N),
+
+       rev(s($N)) -> cons(s($N),rev($N)),
+       rev(0) -> cons(0,nil),
+
+       merge(nil,$L) -> $L,
+       merge($L,nil) -> $L,
+       merge(cons($X,$L1),cons($Y,$L2)) 
+          [$X <= $Y] -> cons($X,merge($L1,cons($Y,$L2))) 
+                    !-> cons($Y,merge(cons($X,$L1),$L2)),
+
+       #split(cons($X,cons($Y,$L))) 
+       #  [ unify(split($L),pair($L1,$L2)) ] -> pair(cons($X,$L1),cons($Y,$L2)),
+
+       split(cons($X,cons($Y,$L))) -> split1($X,$Y,$SL)
+                                      where ($SL <- split($L)),
+       split1($X,$Y,$SL) -> pair(cons($X,$frs),cons($Y,$snd))
+                                       where ($frs <- frs($SL),
+                                              $snd <- snd($SL)),
+   
+       split(nil) -> pair(nil,nil),
+       split(cons($X,nil)) -> pair(cons($X,nil),nil),
+
+       frs(pair($x,$y)) -> $x,
+       snd(pair($x,$y)) -> $y,
+
+                                   
+       mergesort(nil) -> nil,
+       mergesort(cons($X,nil)) -> cons($X,nil),
+       #mergesort(cons($X,cons($Y,$L))) 
+       #     -> merge(mergesort(cons($X,$L1)),mergesort(cons($Y,$L2)))
+       #                          [ unify(split($L),pair($L1,$L2)) ],
+       mergesort(cons($X,cons($Y,$L))) 
+                   -> mergesort1($X,$Y,split($L)),
+
+       mergesort1($X,$Y,$SL)  
+            -> merge(mergesort(cons($X,$L1)),mergesort(cons($Y,$L2)))
+                 where ( $L1 <- frs($SL), $L2 <- snd($SL) ),
+
+       ##
+       # get normal form for
+       # merge(rev(!(s(s(s(s(s(0))))))))
+       T1 -> merge(rev(!(s(s(s(s(s(0)))))))),
+
+       #
+       T2 -> mergesort(rev(10*10)),
+
+       #
+       T3 -> mergesort(rev(10*10*10)),
+       T03 -> rev(10*10*10)
+
+
+     ),BottomTop
+    )
+  )
+ )
+);

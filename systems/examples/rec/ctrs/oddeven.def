@@ -1,0 +1,40 @@
+
+#
+# odd-even.
+#  from WRLA Rewrite Engines Competition.
+#
+#
+
+domain(examples,
+ domain(rec,
+  domain(ctrs,
+    #@option(reduceInFacts(true))
+    #--@option(loggedEntity(SystemReductions))
+    system(oddeven,default, 
+     ruleset(
+
+     odd(0) -> false,
+     even(0) -> true,
+     odd(s($x)) -> even($x),
+     even(s($x)) -> odd($x),
+     0 + $N -> $N,
+     s($N)+$M -> s($N+$M),
+     0 * $N -> 0,
+     s($N)*$M -> $M+$N*$M,
+     !(0) -> s(0),
+     !s($N) -> s($N)*!($N),
+
+     ##
+     # get normal form for
+     T1 -> odd(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(0)))))))))))))))),
+
+     T2 -> odd(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(0))))))))))))))))))))),
+
+     T3 ->  odd(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(0))))))))))))))))))))))))))
+
+
+     ),BottomTop
+    )
+  )
+ )
+);

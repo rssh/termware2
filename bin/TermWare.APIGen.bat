@@ -1,0 +1,1 @@
+java -Dtermware.path="$INSTALL_PATH\systems" -cp "$INSTALL_PATH\lib\TermWare2.jar" ua.gradsoft.termware.APIGen %1 %2 %3 %4 %5 %6 %7 %8

@@ -1,0 +1,42 @@
+#
+# part of rewrite engines competition
+#
+# TODO: recheck
+#
+
+domain(examples,
+ domain(rec,
+  domain(modulo,
+    #@option(reduceInFacts(true))
+    system(permutations,default, 
+     ruleset(
+
+       perm(0) -> pp(p(nil), nilP),
+       perm(s(0)) -> pp(p(ll(l(s(0)), nil)), nilP),
+       perm(s($N)) -> insert1(s($N), perm($N)),
+       insert1($N, pp(p($P), $Ps)) -> pp(insert0($N, $P), insert1($N, $Ps)),
+       insert1($N, nilP) -> nilP,
+       insert0($N, ll(l($M), $P1)) -> pp(p(ll(l($N), ll(l($M), $P1))), 
+                                         map_cons($M, insert0($N, $P1))),
+
+       insert0($N, nil) -> pp(p(ll(l($N), nil)), nilP),
+       map_cons($M, pp(p($P), $Ps)) -> pp(p(ll(l($M), $P)), map_cons($M, $Ps)),
+       map_cons($M, nilP) -> nilP,
+
+       ## ll is associative and id nil
+       ll(ll($X,$Y),$Z) -> ll($X,ll($Y,$Z)),
+       ll(nil) -> nil,
+
+       ## pp is associative and id nil
+       pp(pp($X,$Y),$Z) -> pp($X,pp($Y,$Z)),
+       pp(nil) -> nil,
+
+       ##get normal form for:
+       # perm(s(s(s(s(s(s(s(0))))))))
+       T1 -> perm(s(s(s(s(s(s(s(0))))))))
+
+     ),TopDown
+    )
+  )
+ )
+);
