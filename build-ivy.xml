@@ -19,11 +19,21 @@
 <property name="maven.repo" value="http://repo1.maven.org/maven2" />
 <property name="ivy.groupId" value="org/apache/ivy" />
 
+<condition property="ivy.offline">
+   <or>
+     <and>
+      <available file="${ivy.jar.file}" />
+      <available file="${ivy.jar.dir}/jsch.jar" />
+     </and>
+     <isset property="offline" />
+   </or>
+ </condition>
+
 
   
 <!-- targets -->
 
- <target name="download-ivy" unless="offline">
+ <target name="download-ivy" unless="ivy.offline">
     <!-- download Ivy from web site so that it can be used even without any special installation -->
    <mkdir dir="${ivy.jar.dir}"/>
    <get src="${maven.repo}/${ivy.groupId}/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
