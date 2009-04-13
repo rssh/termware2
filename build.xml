@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <!-- build file for TermWare project -->
-<project name="TermWare" default="build" basedir="." >
+<project name="TermWare-2.x" default="build" basedir="." >
 
 <!-- proeprties -->
 
 <property file="build.properties" />
 
-<condition property="ivy.int.home" value="${ivy.home}" else="${user.home}/.ivy">
+<condition property="ivy.int.home" value="${ivy.home}" 
+                                   else="${user.home}/.ivy2">
   <isset property="ivy.home" />
 </condition>
 

@@ -7,6 +7,7 @@
 
 package ua.gradsoft.termware.annotations;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -15,6 +16,7 @@ import java.lang.annotation.RetentionPolicy;
  *@see ua.gradsoft.termware.AbstractBuildinTransformer
  * @author rssh
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TransformerDescription {
 

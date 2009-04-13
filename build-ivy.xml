@@ -8,9 +8,9 @@
 
 <property file="build.properties" />
 
-<property name="ivy.install.version" value="2.0.0-beta2" />
+<property name="ivy.install.version" value="2.0.0" />
 
-<condition property="ivy.int.home" value="${ivy.home}" else="${user.home}/.ivy">
+<condition property="ivy.int.home" value="${ivy.home}" else="${user.home}/.ivy2">
   <isset property="ivy.home" />
 </condition>
 
@@ -38,7 +38,7 @@
    <mkdir dir="${ivy.jar.dir}"/>
    <get src="${maven.repo}/${ivy.groupId}/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
         dest="${ivy.jar.file}" usetimestamp="true" verbose="true" />
-   <get src="http://ovh.dl.sourceforge.net/sourceforge/jsch/jsch-0.1.36.jar"
+   <get src="http://datacenter.gradsoft.ua/public.repository/net.sf.jsch/jsch/jars/jsch-0.1.41.jar"
         dest="${ivy.jar.dir}/jsch.jar" usetimestamp="true" verbose="true" />
  </target>
 
