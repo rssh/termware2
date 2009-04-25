@@ -204,6 +204,9 @@ public class AttributedTerm extends Term implements Attributed
     
     
     public Term getTerm() {
+        if (term_.getTerm() instanceof Attributed) {
+            return term_.getTerm();
+        }
         return this;
     }
     
@@ -304,7 +307,38 @@ public class AttributedTerm extends Term implements Attributed
 
     public Term subst(Substitution s) throws TermWareException {
         // preserve attributes.
-        return new AttributedTerm(term_.subst(s), attributes_);
+        if (term_.isX()) {
+            Term rx = term_.subst(s);
+            if (rx.isX()) {
+                return new AttributedTerm(rx,attributes_);
+            }else if (rx instanceof Attributed) {
+                Map<String,Term> rxAttributes = ((Attributed)rx).getAttributes();
+                if (rxAttributes.size()!=0) {
+                  Map<String,Term> thisAttributes = this.getAttributes();
+                  if (thisAttributes.size()!=0) {
+                    try {
+                        rxAttributes.putAll(thisAttributes);
+                    } catch (UnsupportedOperationException ex){
+                        AttributedTerm retval = new AttributedTerm(rx);
+                        retval.getAttributes().putAll(rxAttributes);
+                        retval.getAttributes().putAll(thisAttributes);
+                        return retval;
+                    }  
+                  }else{
+                      return rx;
+                  }
+                }else{
+                  return new AttributedTerm(rx,getAttributes());
+                }
+                return rx;
+            }else{
+                return new AttributedTerm(rx,attributes_);
+            }
+        } else if (term_ instanceof Attributed) {
+           return term_.subst(s);
+        }else{
+           return new AttributedTerm(term_.subst(s), attributes_);
+        }
     }
     
     public boolean substInside(Substitution s) throws TermWareException {
@@ -346,11 +380,18 @@ public class AttributedTerm extends Term implements Attributed
     
     public  void setAttribute(String attribute,Term value)
     {
-        attributes_.put(attribute, value);
+        if (term_.getTerm() instanceof Attributed) {
+            ((Attributed)term_.getTerm()).setAttribute(attribute, value);
+        }else{
+            attributes_.put(attribute, value);
+        }
     }
     
     public  Term getAttribute(String attribute)
     {
+        if (term_.getTerm() instanceof Attributed) {
+            return ((Attributed)term_.getTerm()).getAttribute(attribute);
+        }
         Object o = attributes_.get(attribute);
         if (o!=null) {
             return (Term)o;
@@ -360,7 +401,12 @@ public class AttributedTerm extends Term implements Attributed
     }
     
     public Map<String,Term> getAttributes()
-    { return attributes_; }
+    {
+        if (term_.getTerm() instanceof Attributed) {
+            return  ((Attributed)term_.getTerm()).getAttributes();
+        }
+        return attributes_;
+    }
     
     private Term term_;
     private Map<String,Term>  attributes_;

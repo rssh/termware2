@@ -9,6 +9,7 @@ import junit.framework.*;
 import ua.gradsoft.termwaretests.debug.DebugTestSuite;
 import ua.gradsoft.termwaretests.demos.labels.LabelsTestCase;
 import ua.gradsoft.termwaretests.demos.life.LifeTestCase;        
+import ua.gradsoft.termwaretests.jdk.JdkTestSuite;
 import ua.gradsoft.termwaretests.jsr223.JSR223TestSuite;
 import ua.gradsoft.termwaretests.util.UtilTestSuite;
 import ua.gradsoft.termwaretests.systems.SystemsTestSuite;
@@ -48,6 +49,7 @@ public class MainTestSuite extends TestSuite
         addTest(new TestSuite(LifeTestCase.class));
         addTest(new TestSuite(LabelsTestCase.class));
         addTest(new StrategiesTestSuite());
+        addTest(new JdkTestSuite());
       
         addTest(new DebugTestSuite());
         addTest(new JSR223TestSuite());

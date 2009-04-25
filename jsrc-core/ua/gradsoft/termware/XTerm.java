@@ -20,7 +20,7 @@ import ua.gradsoft.termware.exceptions.*;
  *  when we bind propositional variable with some value - it's act as proxy.
  *    (during unifications, we do 'unproxying' to avoid memory leaks)
  **/                           
-public final class XTerm extends Term implements Attributed
+public final class XTerm extends Term
 {
 
  XTerm()

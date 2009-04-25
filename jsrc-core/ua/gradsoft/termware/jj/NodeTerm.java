@@ -1,7 +1,7 @@
 /*
  * NodeTerm.java
  *
- * Copyright (c) 2004-2006 GradSoft  Ukraine
+ * Copyright (c) 2004-2009 GradSoft  Ukraine
  * All Rights Reserved
  */
 
