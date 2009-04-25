@@ -7,11 +7,11 @@ package ua.gradsoft.termware;
  */
 
 import java.io.*;
-import java.util.*;
 import java.math.*;
 
+import java.util.Collections;
+import java.util.Map;
 import ua.gradsoft.termware.exceptions.*;
-import ua.gradsoft.termware.util.*;
 
 /**
  * Term, which represent propositional variable.
@@ -20,7 +20,7 @@ import ua.gradsoft.termware.util.*;
  *  when we bind propositional variable with some value - it's act as proxy.
  *    (during unifications, we do 'unproxying' to avoid memory leaks)
  **/                           
-public final class XTerm extends Term
+public final class XTerm extends Term implements Attributed
 {
 
  XTerm()
@@ -358,8 +358,46 @@ public final class XTerm extends Term
       return PartialOrderingResult.MORE;
    }
  }
+
+ public Map<String,Term> getAttributes()
+ {
+     if (isProxy()) {
+         if (proxy_ instanceof Attributed) {
+             return ((Attributed)proxy_).getAttributes();
+         }else{
+             return Collections.emptyMap();
+         }
+     }else{
+         return Collections.emptyMap();
+     }
+ }
  
- 
+ public Term getAttribute(String attrName)
+ {
+     if (isProxy()) {
+         if (proxy_ instanceof Attributed) {
+             return ((Attributed)proxy_).getAttribute(attrName);
+         }else{
+             return NILTerm.getNILTerm();
+         }
+     }else{
+         return NILTerm.getNILTerm();
+     }     
+ }
+
+ public void setAttribute(String name, Term value)
+ {
+     if (isProxy()) {
+         if (proxy_ instanceof Attributed) {
+             ((Attributed)proxy_).setAttribute(name, value);
+         }else{
+             proxy_ = TermHelper.setAttribute(proxy_, name, value);
+         }
+     }else{
+         throw new RuntimeAssertException("Can't set attribute to free variable");
+     }
+ }
+
  /*
   */
  public final int      minFv()  throws TermWareException

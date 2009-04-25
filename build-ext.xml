@@ -28,10 +28,7 @@
 
     <taskdef name="javachecker"  classname="ua.gradsoft.javachecker.ant.JavaCheckerTask">
      <classpath>
-      <pathelement location="${jchhome}/lib/TermWare2.jar"/>
-      <pathelement location="${jchhome}/lib/TermWareJPP.jar"/>
-      <pathelement location="${jchhome}/lib/JavaChecker2.jar"/>
-      <pathelement location="${jchhome}/lib/JavaChecker2Annotations.jar"/>
+       <fileset dir="${jchhome}/lib" includes="**/*.jar" />
      </classpath>
     </taskdef>    
 
@@ -40,13 +37,15 @@
          input="jsrc-core" output="jchreport.txt" />
    </target>
 
-   <taskdef name="odt2html" classname="ua.gradsoft.odt2html.Odt2HtmlAntTask">     
+   <target name="define-odt2html" depends="retrieve-for-build" >
+    <taskdef name="odt2html" classname="ua.gradsoft.odt2html.Odt2HtmlAntTask" >
     <classpath>         
      <pathelement location="${odt2htmlhome}/ODT2HTML.jar"/>     
     </classpath>
-   </taskdef>
+    </taskdef>
+   </target>
 
-   <target name="webdocs">
+   <target name="webdocs" depends="define-odt2html">
     <odt2html input="docs/tutorial_rus.odt" output="docs/tutorial_rus.html"/>
     <odt2html input="docs/tutorial_eng.odt" output="docs/tutorial_eng.html"/>
     <odt2html input="docs/jsr94api_rus.odt" output="docs/jsr94api_rus.html"/>

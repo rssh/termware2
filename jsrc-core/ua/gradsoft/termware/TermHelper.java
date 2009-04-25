@@ -1,7 +1,6 @@
 /*
  * TermHelper.java
  * (C) Grad-Soft ltd, Kiev, Ukraine.
- * $Id: TermHelper.java,v 1.11 2008-01-05 14:50:04 rssh Exp $
  */
 
 package ua.gradsoft.termware;
@@ -81,7 +80,12 @@ public  class TermHelper {
   **/
  public static Term  setAttribute(Term t, String name, Term attribute) /* throws TermWareException*/
  {
-  if ( t instanceof Attributed ) {
+  if ( t.isX()) {
+      // for free term always create
+      AttributedTerm it=new AttributedTerm(t);
+      it.setAttribute(name, attribute);
+      return it;
+  }else if ( t instanceof Attributed ) {
       Attributed it=(Attributed)t;
       it.setAttribute(name, attribute);
       return t;

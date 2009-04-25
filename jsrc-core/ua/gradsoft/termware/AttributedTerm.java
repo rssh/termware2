@@ -1,7 +1,6 @@
 /*
  * AttributedTerm.java
  *
- * Created on ��������, 13, ������� 2004, 1:23
  */
 
 package ua.gradsoft.termware;
@@ -301,9 +300,11 @@ public class AttributedTerm extends Term implements Attributed
     public void shiftFv(int newMinFv) throws TermWareException {
         term_.shiftFv(newMinFv);
     }
-    
+
+
     public Term subst(Substitution s) throws TermWareException {
-        return term_.subst(s);
+        // preserve attributes.
+        return new AttributedTerm(term_.subst(s), attributes_);
     }
     
     public boolean substInside(Substitution s) throws TermWareException {

@@ -1,8 +1,7 @@
 package ua.gradsoft.termware;
 
 /*
- * (C) Ruslan Shevchenko <Ruslan@Shevchenko.Kiev.UA> 2002-2007
- * $Id: ComplexTerm.java,v 1.6 2008-01-13 01:09:33 rssh Exp $
+ * (C) Ruslan Shevchenko <Ruslan@Shevchenko.Kiev.UA> 2002-2009
  */
 
 

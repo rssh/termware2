@@ -27,7 +27,7 @@
                conf="src->default" transitive="false" />
    -->
    <dependency org="ua.gradsoft" name="odt2html" rev="1.1" 
-               conf="src->default" transitive="false" >
+               conf="build->default" transitive="false" >
          <artifact name="odt2html" type="jar"
            url="http://odt2html.gradsoft.ua/files/odt2html-1.1.jar"
          />

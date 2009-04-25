@@ -8,7 +8,7 @@
 <installation version="1.0">
  <info>
   <appname>TermWare</appname>
-  <appversion>2.3.1</appversion>
+  <appversion>2.3.2</appversion>
   <url>http://www.gradsoft.ua</url>
   <authors>
    <author name="Ruslan Shevchenko" email="Ruslan@Shevchenko.Kiev.UA" />
@@ -34,8 +34,8 @@
 <packs>
  <pack name="library" required="yes">
   <description> Core library, packaged as jar </description>
-  <file src="../lib/TermWare-2.3.1.jar" targetdir="$INSTALL_PATH/lib" />
-  <file src="../lib/TermWare2jsr94-2.3.1.jar" targetdir="$INSTALL_PATH/lib" />
+  <file src="../lib/TermWare-2.3.2.jar" targetdir="$INSTALL_PATH/lib" />
+  <file src="../lib/TermWare2jsr94-2.3.2.jar" targetdir="$INSTALL_PATH/lib" />
   <file src="../lib/junit-3.8.jar" targetdir="$INSTALL_PATH/lib" />
   <file src="../lib/jsr94.jar" targetdir="$INSTALL_PATH/lib" />
  </pack>                         
@@ -145,7 +145,7 @@
   <parsable targetfile="$INSTALL_PATH/bin/manners.bat" os="windows"/>
   <parsable targetfile="$INSTALL_PATH/bin/mannersData.bat" os="windows"/>
   <!-- libs -->
-  <file src="../lib/TermWareDemos-2.3.1.jar" targetdir="$INSTALL_PATH/lib" />
+  <file src="../lib/TermWareDemos-2.3.2.jar" targetdir="$INSTALL_PATH/lib" />
  </pack>
  <pack name="source code" required="no">
   <description> source code of core TermWare library </description>

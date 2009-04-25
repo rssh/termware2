@@ -84,6 +84,10 @@
                 pubrevision="${termware.version}"
                 overwrite="true"
                 artifactspattern="installer/[artifact]-[revision].[ext]" />
+   <ivy:publish resolver="datacenter.gradsoft.ua" 
+                pubrevision="${termware.version}"
+                overwrite="true"
+                artifactspattern="installer/[artifact]-[revision].[ext]" />
  </target>
 
 

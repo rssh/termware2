@@ -1,5 +1,5 @@
 /*
- * (C) Ruslan Shevchenko <Ruslan@Shevchenko.Kiev.UA> 2002-2008
+ * (C) Ruslan Shevchenko <Ruslan@Shevchenko.Kiev.UA> 2002-2009
  * (C) Grad-Soft Ltd, Kiev, Ukraine.
  * http://www.gradsoft.ua
  */
