@@ -80,16 +80,12 @@ public  class TermHelper {
   **/
  public static Term  setAttribute(Term t, String name, Term attribute) /* throws TermWareException*/
  {
-  if ( t.isX()) {
-      // for free term always create
-      AttributedTerm it=new AttributedTerm(t);
-      it.setAttribute(name, attribute);
-      return it;
-  }else if ( t instanceof Attributed ) {
+  try {
+    if ( t instanceof Attributed ) {
       Attributed it=(Attributed)t;
       it.setAttribute(name, attribute);
       return t;
-  }else{
+    }else{
       Term t1=t.getTerm();
       if (t1 instanceof Attributed) {
           Attributed it=(Attributed)t1;
@@ -100,6 +96,9 @@ public  class TermHelper {
           it.setAttribute(name, attribute);
           return it;
       }
+    }
+  }catch(TermWareException ex){
+      throw new TermWareRuntimeException(ex);
   }
  }
 
@@ -152,15 +151,10 @@ public  class TermHelper {
      if (! (src instanceof Attributed) ) {
          return dst;
      }
-     Attributed retval;
-     if (dst instanceof Attributed) {
-         retval=(Attributed)dst;                  
-     }else{
-         retval=new AttributedTerm(dst);
-     }     
+     Term retval = dst;
      Map<String,Term> attributes=((Attributed)src).getAttributes();
      for(Map.Entry<String,Term> me: attributes.entrySet()) {
-         retval.setAttribute(me.getKey(),me.getValue());
+         retval = TermHelper.setAttribute(retval,me.getKey(),me.getValue());
      }
      return (Term)retval;
  }

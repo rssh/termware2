@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import ua.gradsoft.termware.exceptions.AssertException;
 import ua.gradsoft.termware.exceptions.ConversionException;
 
 
@@ -21,14 +22,20 @@ import ua.gradsoft.termware.exceptions.ConversionException;
 public class AttributedTerm extends Term implements Attributed
 {
     
-    public AttributedTerm(Term term,Map<String,Term> attributes)
+    AttributedTerm(Term term,Map<String,Term> attributes) throws TermWareException
     {
+        if (term instanceof Attributed) {
+           throw new AssertException("term already attributed");
+        }
         term_=term;
         attributes_=attributes;
     }
     
-    public AttributedTerm(Term t)
+    AttributedTerm(Term t) throws TermWareException
     {
+        if (t instanceof Attributed) {
+           throw new AssertException("term already attributed");
+        }
         term_=t;
         attributes_=new HashMap<String,Term>();
     }
@@ -309,9 +316,7 @@ public class AttributedTerm extends Term implements Attributed
         // preserve attributes.
         if (term_.isX()) {
             Term rx = term_.subst(s);
-            if (rx.isX()) {
-                return new AttributedTerm(rx,attributes_);
-            }else if (rx instanceof Attributed) {
+            if (rx instanceof Attributed) {
                 Map<String,Term> rxAttributes = ((Attributed)rx).getAttributes();
                 if (rxAttributes.size()!=0) {
                   Map<String,Term> thisAttributes = this.getAttributes();
@@ -319,7 +324,7 @@ public class AttributedTerm extends Term implements Attributed
                     try {
                         rxAttributes.putAll(thisAttributes);
                     } catch (UnsupportedOperationException ex){
-                        AttributedTerm retval = new AttributedTerm(rx);
+                        AttributedTerm retval = new AttributedTerm(rx.getTerm());
                         retval.getAttributes().putAll(rxAttributes);
                         retval.getAttributes().putAll(thisAttributes);
                         return retval;
@@ -328,7 +333,7 @@ public class AttributedTerm extends Term implements Attributed
                       return rx;
                   }
                 }else{
-                  return new AttributedTerm(rx,getAttributes());
+                  return TermHelper.copyAttributes(rx, this);
                 }
                 return rx;
             }else{
@@ -336,6 +341,8 @@ public class AttributedTerm extends Term implements Attributed
             }
         } else if (term_ instanceof Attributed) {
            return term_.subst(s);
+        } else if (term_.getTerm() instanceof Attributed ) {
+            return term_.getTerm().subst(s);
         }else{
            return new AttributedTerm(term_.subst(s), attributes_);
         }
