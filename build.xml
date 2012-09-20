@@ -53,7 +53,7 @@
  </target>
  
  <target name="build-classes" depends="build-parsers">
-  <javac srcdir="jsrc-core" includes="**/*.java" deprecation="on" debug="${debug}" >
+  <javac srcdir="jsrc-core" includes="**/*.java" deprecation="on" debug="${debug}" target="${javac.target}" >
     <!--<compilerarg  line="-Xlint:unchecked" />-->
   </javac>
   <jar basedir="jsrc-core" includes="**/*.class,**/*.dtd,META-INF/**/*" 
@@ -74,7 +74,7 @@
  </target>
 
  <target name="build-jsr94-classes"  depends="build-classes" >
-  <javac srcdir="jsrc-jsr94" includes="**/*.java" deprecation="on" debug="${debug}" >
+  <javac srcdir="jsrc-jsr94" includes="**/*.java" deprecation="on" debug="${debug}" target="${javac.target}" >
    <classpath>
      <pathelement location="jsrc-jsr94" />
      <pathelement location="lib/TermWare-${termware.version}.jar" />
@@ -101,7 +101,7 @@
  
  
  <target name="build-demos"  depends="build-classes">
-  <javac srcdir="jdemos" includes="**/*.java" debug="${debug}" >
+  <javac srcdir="jdemos" includes="**/*.java" debug="${debug}" target="${javac.target}" >
     <classpath>
       <pathelement location="jdemos"/>
       <pathelement location="lib/TermWare-${termware.version}.jar"/>
@@ -113,13 +113,14 @@
        index="true">
   <include name="build"/>
   <manifest>
-   <attribute name="Build-By" value="${user-name}"/>
+   <attribute name="Build-By" value="${user.name}"/>
   </manifest>
   </jar>
  </target>
 
  <target name="build-tests"  depends="build-classes,retrieve-for-test">
-  <javac srcdir="jtests" includes="**/*.java" debug="${debug}" >
+  <javac srcdir="jtests" includes="**/*.java" debug="${debug}" 
+         target="${javac.target}" >
     <classpath>
       <pathelement location="jtests"/>
       <pathelement location="lib/TermWare-${termware.version}.jar"/>
@@ -132,14 +133,15 @@
        index="true">
   <include name="build"/>
   <manifest>
-   <attribute name="Build-By" value="${user-name}"/>
+   <attribute name="Build-By" value="${user.name}"/>
   </manifest>
   </jar>
  </target>
 
  <target name="run-old-tests" >
    <java classname="ua.gradsoft.termwaretests.old.AllTests"
-        fork="true" failonerror="true" >
+        fork="true" failonerror="true" 
+        >
       <classpath>
       <pathelement location="jtests"/>
       <pathelement location="lib/TermWare-${termware.version}.jar"/>
